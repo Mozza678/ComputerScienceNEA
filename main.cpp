@@ -1,7 +1,9 @@
+#include <iostream>
 #include <SFML/Graphics.hpp>
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode({800, 600}), "Title");
+    sf::RenderWindow window(sf::VideoMode({2560, 1440}), "My Window", sf::Style::Default, sf::State::Fullscreen);
+    window.setFramerateLimit(60); // call it once after creating the window
 
     while (window.isOpen()) {
         while (auto event = window.pollEvent()) {
