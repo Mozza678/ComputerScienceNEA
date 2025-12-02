@@ -1,0 +1,1 @@
+const int gridWidth = 100;
