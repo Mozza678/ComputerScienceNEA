@@ -4,9 +4,14 @@
 
 class Simulation {
 public:
+    Simulation();
+    void run();
     
 private:
-    std::uint8_t pixelBuffer[4 * gridWidth * gridWidth];
+    std::vector<std::uint8_t> pixelBuffer;
     std::vector<std::uint8_t> convertDensityToPixelColourValues(float density);
+    sf::Texture gridTexture;
+
     void assignPixelColourValuesToPixelBuffer(std::vector<std::uint8_t> pixelColourValues, int x, int y);
+    void createGridSprite();
 };

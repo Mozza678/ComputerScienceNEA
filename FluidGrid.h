@@ -4,7 +4,6 @@
 class FluidGrid {
 private:
     int N;
-
     float densityGrid [gridWidth * gridWidth];
 public:
     float getValue(int x, int y);
