@@ -3,9 +3,9 @@
 
 class FluidGrid {
 private:
-    int N;
-    float densityGrid [gridWidth * gridWidth];
+    std::vector<float> densityGrid;
 public:
+    FluidGrid(int gridSize);
     float getValue(int x, int y);
     void setValue(int x, int y, float newValue);
 };
