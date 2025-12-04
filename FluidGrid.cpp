@@ -1,4 +1,4 @@
-#include <fluidGrid.h>
+#include "fluidGrid.h"
 
 float FluidGrid::getValue(int x, int y) {
     return densityGrid[x + gridWidth * y];

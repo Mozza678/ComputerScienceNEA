@@ -1,15 +1,19 @@
-#include <Simulation.h>
+#include "Simulation.h"
 #include <vector>
 #include <algorithm>
-#include <settings.h>
 
 Simulation::Simulation() 
-    : pixelBuffer(4 * gridWidth * gridWidth){}
+    : pixelBuffer(4 * gridWidth * gridWidth),
+      gridTexture({static_cast<unsigned int>(gridWidth), static_cast<unsigned int>(gridWidth)})
+    {
+        gridTextureSpritePtr = std::make_unique<sf::Sprite>(gridTexture);
+        (*gridTextureSpritePtr).setScale({static_cast<float>(scale), static_cast<float>(scale)});
+    }
 
 std::vector<std::uint8_t> Simulation::convertDensityToPixelColourValues(float density){
     std::vector<std::uint8_t> pixelColourValues;
     int integerDensity = static_cast<int>(std::clamp(density, 0.0f, 1.0f) * 255);
-    for (int i = 1; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
         pixelColourValues.push_back(integerDensity);
     }
     pixelColourValues.push_back(255);
@@ -22,20 +26,16 @@ void Simulation::assignPixelColourValuesToPixelBuffer(std::vector<std::uint8_t> 
     }
 };
 
-void Simulation::createGridSprite() {
-    sf::Vector2u textureSize = {static_cast<unsigned int>(gridWidth), static_cast<unsigned int>(gridWidth)};
-    sf::Vector2f scaleVector = {static_cast<unsigned int>(scale), static_cast<unsigned int>(scale)};
-    sf::Texture gridTexture(textureSize);
+void Simulation::updateGridSprite() {
     gridTexture.update(pixelBuffer.data());
-    sf::Sprite gridTextureSprite(gridTexture);
-    gridTextureSprite.setScale(scaleVector);
 };
 
 void Simulation::run(){
-    createGridSprite();
 
     sf::RenderWindow window(sf::VideoMode({500, 500}), "Fluid Simulator");
-    window.setFramerateLimit(60);
+    //window.setFramerateLimit(60);
+
+    pixelBuffer[20200] = 0;
 
     while (window.isOpen()) {
         while (auto event = window.pollEvent()) {
@@ -43,7 +43,9 @@ void Simulation::run(){
                 window.close();
             }
         }
-        window.draw(gridTextureSprite); // to fix this create a seperate texture function and then call the texture function and then the sprite function within the constructor for simulation
+        window.clear({0,255,0});
+        updateGridSprite();
+        window.draw(*gridTextureSpritePtr); // to fix this create a seperate texture function and then call the texture function and then the sprite function within the constructor for simulation
         window.display();
     }
 };

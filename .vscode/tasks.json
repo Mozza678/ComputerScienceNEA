@@ -8,13 +8,26 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "-IC:\\SFML-3.0.2\\include",
-                "${file}",
+                
+                // 1. INPUT SOURCE FILES
+                "${fileDirname}\\main.cpp",
+                "${fileDirname}\\Simulation.cpp",
+                "${fileDirname}\\FluidGrid.cpp",
+                
+                // 2. LIBRARY PATH
                 "-LC:\\SFML-3.0.2\\lib",
-                "-lsfml-graphics",
-                "-lsfml-window",
-                "-lsfml-system",
+                
+                // 3. SFML DEBUG LIBRARIES (The ones you listed)
+                "-lsfml-graphics-d",
+                "-lsfml-window-d",
+                "-lsfml-system-d",
+                
+                // 4. CRITICAL WINDOWS/SFML DEPENDENCIES (The missing pieces!)
+                "-lsfml-main-d", // ⬅️ ADD THIS
+                
+                // 5. OUTPUT
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${fileDirname}\\main.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"

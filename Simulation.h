@@ -1,6 +1,6 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
-#include <settings.h>
+#include "settings.h"
 
 class Simulation {
 public:
@@ -11,7 +11,8 @@ private:
     std::vector<std::uint8_t> pixelBuffer;
     std::vector<std::uint8_t> convertDensityToPixelColourValues(float density);
     sf::Texture gridTexture;
+    std::unique_ptr<sf::Sprite> gridTextureSpritePtr;
 
     void assignPixelColourValuesToPixelBuffer(std::vector<std::uint8_t> pixelColourValues, int x, int y);
-    void createGridSprite();
+    void updateGridSprite();
 };
