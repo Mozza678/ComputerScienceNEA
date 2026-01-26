@@ -64,11 +64,19 @@ void Simulation::updatePixelBuffer() {
 
 void Simulation::checkForMouseInput(sf::RenderWindow& window) {
     if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-            int gridX = mousePos.x / scale;
-            int gridY = mousePos.y / scale;
-            if (gridX >= 0 && gridX < gridWidth && gridY >= 0 && gridY < gridWidth) {
-                fluidGrid.setValue(gridX, gridY, 100.0f);
-            }
+        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+        
+        static sf::Vector2i lastMousePos = mousePos; //creates permeneant variable that outlasts the function. see final line
+        float mouseVelX = (mousePos.x - lastMousePos.x) * mouseVelocityStrength; // Adjust 0.2f for "strength"
+        float mouseVelY = (mousePos.y - lastMousePos.y) * mouseVelocityStrength;
+
+        int gridX = mousePos.x / scale;
+        int gridY = mousePos.y / scale;
+
+        if (gridX > 0 && gridX < gridWidth - 1 && gridY > 0 && gridY < gridWidth - 1) {
+            fluidGrid.setValue(gridX, gridY, 100.0f); 
+            fluidGrid.addVelocity(gridX, gridY, mouseVelX, mouseVelY);
         }
+        lastMousePos = mousePos; //stores mouse pos for current frame (will be previous frame when accessed)
+    }
 }

@@ -13,6 +13,8 @@ private:
 public:
     FluidGrid(int gridSize);
     float getValue(int x, int y);
+    void addVelocity(int x, int y, float velocityX, float velocityY);
+    void advect();
     void setValue(int x, int y, float newValue);
     void diffuse(float diffRate, float deltaTime);
     void copyDensityGrid();
