@@ -43,8 +43,7 @@ void Simulation::run(){
             }
         }
         checkForMouseInput(window);
-        fluidGrid.copyDensityGrid();
-        fluidGrid.diffuse(diffRate, deltaTime);
+        fluidGrid.step();
         updatePixelBuffer();
         updateGridSprite();
         window.clear({0,255,0}); // wipe the previous frame
@@ -56,7 +55,7 @@ void Simulation::run(){
 void Simulation::updatePixelBuffer() {
     for (int y = 0; y < gridWidth; ++y) {   // loop through all y co-ordinates
         for (int x = 0; x < gridWidth; ++x) {   // loop through all x co-ordinates
-            float density = fluidGrid.getValue(x, y);    // retrieve density value from fluid grid at that specific co-ordinate
+            float density = fluidGrid.getValue(fluidGrid.densityGrid, x, y);    // retrieve density value from fluid grid at that specific co-ordinate
             assignDensityToPixelBuffer(density, x, y);
         }
     }
@@ -74,7 +73,7 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
         int gridY = mousePos.y / scale;
 
         if (gridX > 0 && gridX < gridWidth - 1 && gridY > 0 && gridY < gridWidth - 1) {
-            fluidGrid.setValue(gridX, gridY, 100.0f); 
+            fluidGrid.setValue(fluidGrid.densityGrid, gridX, gridY, 100.0f); 
             fluidGrid.addVelocity(gridX, gridY, mouseVelX, mouseVelY);
         }
         lastMousePos = mousePos; //stores mouse pos for current frame (will be previous frame when accessed)

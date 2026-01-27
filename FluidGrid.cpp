@@ -4,12 +4,16 @@ FluidGrid::FluidGrid(int gridSize)
     : densityGrid(gridSize * gridSize),
       tempDensityGrid(gridSize * gridSize),
       horizontalVelocity(gridSize * gridSize, 0.0f),
-      verticalVelocity(gridSize * gridSize, 0.0f)
+      verticalVelocity(gridSize * gridSize, 0.0f),
+      tempHorizontalVelocity(gridSize * gridSize, 0.0f),
+      tempVerticalVelocity(gridSize * gridSize, 0.0f),
+      divergence(gridSize * gridSize, 0.0f),
+      pressure(gridSize * gridSize, 0.0f)
     {
 
     };
 
-void FluidGrid::advect() {
+void FluidGrid::advect(std::vector<float>& grid, std::vector<float>& tempGrid) {
     float scaleFactor = deltaTime * (gridWidth - 2);
 
     for (int y = 1; y < gridWidth - 1; y++) {
@@ -43,22 +47,22 @@ void FluidGrid::advect() {
             float neighbourUpWeight = oldY - static_cast<float>(neighbourDown);
             float neighbourDownWeight = 1.0f - neighbourUpWeight;
 
-            //assign new density to position based on the density within the grids where fluid is being pulled from
-            densityGrid[x + gridWidth * y] = 
-                neighbourLeftWeight * (neighbourDownWeight * tempDensityGrid[neighbourLeft + gridWidth * neighbourDown] + 
-                                       neighbourUpWeight   * tempDensityGrid[neighbourLeft + gridWidth * neighbourUp]) +
-                neighbourRightWeight * (neighbourDownWeight * tempDensityGrid[neighbourRight + gridWidth * neighbourDown] + 
-                                        neighbourUpWeight   * tempDensityGrid[neighbourRight + gridWidth * neighbourUp]);
+            //assign new value to position based on the values within the positions where fluid is being pulled from
+            grid[x + gridWidth * y] = 
+                neighbourLeftWeight * (neighbourDownWeight * tempGrid[neighbourLeft + gridWidth * neighbourDown] + 
+                                       neighbourUpWeight   * tempGrid[neighbourLeft + gridWidth * neighbourUp]) +
+                neighbourRightWeight * (neighbourDownWeight * tempGrid[neighbourRight + gridWidth * neighbourDown] + 
+                                        neighbourUpWeight   * tempGrid[neighbourRight + gridWidth * neighbourUp]);
         }
     }
 }
 
-float FluidGrid::getValue(int x, int y) {
-    return densityGrid[x + gridWidth * y];
+float FluidGrid::getValue(std::vector<float>& grid, int x, int y) {
+    return grid[x + gridWidth * y];
 };
 
-void FluidGrid::setValue(int x, int y, float newValue) {
-    densityGrid[x + gridWidth * y] = newValue;
+void FluidGrid::setValue(std::vector<float>& grid, int x, int y, float newValue) {
+    grid[x + gridWidth * y] = newValue;
 };
 
 void FluidGrid::diffuse(float diffRate, float deltaTime) {
@@ -66,8 +70,8 @@ void FluidGrid::diffuse(float diffRate, float deltaTime) {
     for (int k = 0; k < 20; k++) {
         for (int y = 1; y < gridWidth - 1; y++) {
             for (int x = 1; x < gridWidth - 1; x++) {
-                float neighbors = getValue(x - 1, y) + getValue(x + 1, y) +
-                                  getValue(x, y - 1) + getValue(x, y + 1);
+                float neighbors = getValue(densityGrid, x - 1, y) + getValue(densityGrid, x + 1, y) +
+                                  getValue(densityGrid, x, y - 1) + getValue(densityGrid, x, y + 1);
                 float nextVal = (tempDensityGrid[x + gridWidth * y] + a * neighbors) / (1 + 4 * a);
                 densityGrid[x + gridWidth * y] = nextVal;
             }
@@ -81,6 +85,40 @@ void FluidGrid::addVelocity(int x, int y, float velocityX, float velocityY) {
     verticalVelocity[position] += velocityY;
 }
 
-void FluidGrid::copyDensityGrid() {
+void FluidGrid::project() {
+    for (int y = 1; y < gridWidth - 1; y++) {
+        for (int x = 1; x < gridWidth - 1; x++) {
+            divergence[x + gridWidth * y] = -0.5f * (
+                horizontalVelocity[(x + 1) + gridWidth * y] - horizontalVelocity[(x - 1) + gridWidth * y] +
+                verticalVelocity[x + gridWidth * (y + 1)] - verticalVelocity[x + gridWidth * (y - 1)]
+            ) / gridWidth;
+            pressure[x + gridWidth * y] = 0;
+        }
+    }
+    for (int k = 0; k < 20; k++) {
+        for (int y = 1; y < gridWidth - 1; y++) {
+            for (int x = 1; x < gridWidth - 1; x++) {
+                pressure[x + gridWidth * y] = (divergence[x + gridWidth * y] + 
+                    pressure[(x - 1) + gridWidth * y] + pressure[(x + 1) + gridWidth * y] +
+                    pressure[x + gridWidth * (y - 1)] + pressure[x + gridWidth * (y + 1)]) / 4.0f;
+            }
+        }
+    }
+    for (int y = 1; y < gridWidth - 1; y++) {
+        for (int x = 1; x < gridWidth - 1; x++) {
+            horizontalVelocity[x + gridWidth * y] -= 0.5f * (pressure[(x + 1) + gridWidth * y] - pressure[(x - 1) + gridWidth * y]) * gridWidth;
+            verticalVelocity[x + gridWidth * y] -= 0.5f * (pressure[x + gridWidth * (y + 1)] - pressure[x + gridWidth * (y - 1)]) * gridWidth;
+        }
+    }
+}
+
+void FluidGrid::step() {
+    tempHorizontalVelocity = horizontalVelocity;
+    tempVerticalVelocity = verticalVelocity;
     tempDensityGrid = densityGrid;
+    advect(horizontalVelocity, tempHorizontalVelocity);
+    advect(verticalVelocity, tempVerticalVelocity);
+    project();
+    advect(densityGrid, tempDensityGrid);
+    diffuse(diffRate, deltaTime);
 };

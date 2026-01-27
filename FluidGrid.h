@@ -4,18 +4,21 @@
 
 class FluidGrid {
 private:
-    std::vector<float> densityGrid;
     std::vector<float> tempDensityGrid;
     std::vector<float> horizontalVelocity;
     std::vector<float> verticalVelocity;
     std::vector<float> tempHorizontalVelocity;
     std::vector<float> tempVerticalVelocity;
+    std::vector<float> divergence;
+    std::vector<float> pressure;
+    void diffuse(float diffRate, float deltaTime);
+    void project();
+    void advect(std::vector<float>& grid, std::vector<float>& tempGrid);
 public:
     FluidGrid(int gridSize);
-    float getValue(int x, int y);
+    std::vector<float> densityGrid;
+    float getValue(std::vector<float>& grid, int x, int y);
+    void setValue(std::vector<float>& grid, int x, int y, float newValue);
     void addVelocity(int x, int y, float velocityX, float velocityY);
-    void advect();
-    void setValue(int x, int y, float newValue);
-    void diffuse(float diffRate, float deltaTime);
-    void copyDensityGrid();
+    void step();
 };
