@@ -113,8 +113,8 @@ void FluidGrid::project() {
 
     for (int y = 1; y < gridWidth - 1; y++) {
         for (int x = 1; x < gridWidth - 1; x++) {
-            horizontalVelocity[x + gridWidth * y] -= 0.5f * (pressure[(x + 1) + gridWidth * y] - pressure[(x - 1) + gridWidth * y]) * gridWidth;
-            verticalVelocity[x + gridWidth * y] -= 0.5f * (pressure[x + gridWidth * (y + 1)] - pressure[x + gridWidth * (y - 1)]) * gridWidth;
+            horizontalVelocity[x + gridWidth * y] -= 0.5f * (pressure[(x + 1) + gridWidth * y] - pressure[(x - 1) + gridWidth * y]);
+            verticalVelocity[x + gridWidth * y] -= 0.5f * (pressure[x + gridWidth * (y + 1)] - pressure[x + gridWidth * (y - 1)]);
         }
     }
     setBoundaries(1, horizontalVelocity);
@@ -130,7 +130,7 @@ void FluidGrid::step() {
     tempDensityGrid = densityGrid;
     advect(densityGrid, tempDensityGrid);
     diffuse(diffRate, deltaTime);
-};
+}
 
 void FluidGrid::setBoundaries(int b, std::vector<float>& x) {
     for (int i = 1; i < gridWidth - 1; i++) {
@@ -145,3 +145,4 @@ void FluidGrid::setBoundaries(int b, std::vector<float>& x) {
     x[(gridWidth - 1) + gridWidth * 0] = 0.5f * (x[(gridWidth - 2) + gridWidth * 0] + x[(gridWidth - 1) + gridWidth * 1]);
     x[(gridWidth - 1) + gridWidth * (gridWidth - 1)] = 0.5f * (x[(gridWidth - 2) + gridWidth * (gridWidth - 1)] + x[(gridWidth - 1) + gridWidth * (gridWidth - 2)]);
 }
+
