@@ -65,9 +65,6 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
     static sf::Vector2i lastMousePos = mousePos;
 
-    float mouseVelX = (mousePos.x - lastMousePos.x) * mouseVelocityStrength; 
-    float mouseVelY = (mousePos.y - lastMousePos.y) * mouseVelocityStrength;
-
     int gridX = mousePos.x / scale;
     int gridY = mousePos.y / scale;
 
