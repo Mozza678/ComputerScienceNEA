@@ -19,35 +19,30 @@ void FluidGrid::advect(std::vector<float>& grid, std::vector<float>& tempGrid) {
     for (int y = 1; y < gridWidth - 1; y++) {
         for (int x = 1; x < gridWidth - 1; x++) {
 
-            //go back to find where the density came from
-            float oldX = x - scaleFactor * horizontalVelocity[x + gridWidth * y];
-            float oldY = y - scaleFactor * verticalVelocity[x + gridWidth * y];
+            // Use the "temp" velocities to find where the density came from
+            float oldX = x - scaleFactor * tempHorizontalVelocity[x + gridWidth * y];
+            float oldY = y - scaleFactor * tempVerticalVelocity[x + gridWidth * y];
 
-            //check co ordinates
-            if (oldX < 0.5f) {
-                oldX = 0.5f; 
-            } else if (oldX > gridWidth - 1.51f) {
-                oldX = gridWidth - 1.51f;
-            };
-            if (oldY < 0.5f) {
-                oldY = 0.5f; 
-            } else if (oldY > gridWidth - 1.51f) {
-                oldY = gridWidth - 1.51f;
-            };
+            // Bound checking
+            if (oldX < 0.5f) oldX = 0.5f; 
+            else if (oldX > gridWidth - 1.51f) oldX = gridWidth - 1.51f;
             
-            //assign values for the co-ordinates of the neighbours
+            if (oldY < 0.5f) oldY = 0.5f; 
+            else if (oldY > gridWidth - 1.51f) oldY = gridWidth - 1.51f;
+
+            // Assign values for the co-ordinates of the neighbours
             int neighbourLeft = static_cast<int>(oldX);
             int neighbourRight = neighbourLeft + 1;
             int neighbourDown = static_cast<int>(oldY);
             int neighbourUp = neighbourDown + 1;
 
-            //assign values for the weight of the fluid taken from each neighbour depending on position
+            // Assign weights based on position (Original variable names)
             float neighbourRightWeight = oldX - static_cast<float>(neighbourLeft);
             float neighbourLeftWeight = 1.0f - neighbourRightWeight;
             float neighbourUpWeight = oldY - static_cast<float>(neighbourDown);
             float neighbourDownWeight = 1.0f - neighbourUpWeight;
 
-            //assign new value to position based on the values within the positions where fluid is being pulled from
+            // Bilinear interpolation using your variable names
             grid[x + gridWidth * y] = 
                 neighbourLeftWeight * (neighbourDownWeight * tempGrid[neighbourLeft + gridWidth * neighbourDown] + 
                                        neighbourUpWeight   * tempGrid[neighbourLeft + gridWidth * neighbourUp]) +
@@ -130,6 +125,9 @@ void FluidGrid::step() {
     tempDensityGrid = densityGrid;
     advect(densityGrid, tempDensityGrid);
     diffuse(diffRate, deltaTime);
+    for (float &d : densityGrid) {
+        d *= 0.998f; 
+    };
 }
 
 void FluidGrid::setBoundaries(int b, std::vector<float>& x) {

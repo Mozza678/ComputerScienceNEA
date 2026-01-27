@@ -62,17 +62,17 @@ void Simulation::updatePixelBuffer() {
 }
 
 void Simulation::checkForMouseInput(sf::RenderWindow& window) {
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        
-        static sf::Vector2i lastMousePos = mousePos; //creates permeneant variable that outlasts the function. see final line
-        float mouseVelX = (mousePos.x - lastMousePos.x) * mouseVelocityStrength * 10.0f; 
-        float mouseVelY = (mousePos.y - lastMousePos.y) * mouseVelocityStrength * 10.0f;
+    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+    static sf::Vector2i lastMousePos = mousePos;
 
-        int gridX = mousePos.x / scale;
-        int gridY = mousePos.y / scale;
+    float mouseVelX = (mousePos.x - lastMousePos.x) * mouseVelocityStrength * 10.0f; 
+    float mouseVelY = (mousePos.y - lastMousePos.y) * mouseVelocityStrength * 10.0f;
 
-        if (gridX > 0 && gridX < gridWidth - 1 && gridY > 0 && gridY < gridWidth - 1) {
+    int gridX = mousePos.x / scale;
+    int gridY = mousePos.y / scale;
+
+    if (gridX > 0 && gridX < gridWidth - 1 && gridY > 0 && gridY < gridWidth - 1) {
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
             float currentDensity = fluidGrid.getValue(fluidGrid.densityGrid, gridX, gridY);
             fluidGrid.setValue(fluidGrid.densityGrid, gridX, gridY, currentDensity + fluidAddedOnClick); 
             fluidGrid.addVelocity(gridX, gridY, mouseVelX, mouseVelY);
@@ -81,7 +81,6 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) {
             fluidGrid.addVelocity(gridX, gridY, mouseVelX, mouseVelY);
         }
-        
-        lastMousePos = mousePos; //stores mouse pos for current frame (will be previous frame when accessed)
     }
+    lastMousePos = mousePos; 
 }
