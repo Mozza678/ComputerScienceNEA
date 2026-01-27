@@ -66,8 +66,8 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         
         static sf::Vector2i lastMousePos = mousePos; //creates permeneant variable that outlasts the function. see final line
-        float mouseVelX = (mousePos.x - lastMousePos.x) * mouseVelocityStrength; // Adjust 0.2f for "strength"
-        float mouseVelY = (mousePos.y - lastMousePos.y) * mouseVelocityStrength;
+        float mouseVelX = (mousePos.x - lastMousePos.x) * mouseVelocityStrength * 10.0f; 
+        float mouseVelY = (mousePos.y - lastMousePos.y) * mouseVelocityStrength * 10.0f;
 
         int gridX = mousePos.x / scale;
         int gridY = mousePos.y / scale;

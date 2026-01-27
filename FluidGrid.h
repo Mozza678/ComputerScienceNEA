@@ -14,6 +14,7 @@ private:
     void diffuse(float diffRate, float deltaTime);
     void project();
     void advect(std::vector<float>& grid, std::vector<float>& tempGrid);
+    void setBoundaries(int b, std::vector<float>& x);
 public:
     FluidGrid(int gridSize);
     std::vector<float> densityGrid;

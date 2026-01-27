@@ -55,6 +55,7 @@ void FluidGrid::advect(std::vector<float>& grid, std::vector<float>& tempGrid) {
                                         neighbourUpWeight   * tempGrid[neighbourRight + gridWidth * neighbourUp]);
         }
     }
+    setBoundaries(0, grid);
 }
 
 float FluidGrid::getValue(std::vector<float>& grid, int x, int y) {
@@ -77,6 +78,7 @@ void FluidGrid::diffuse(float diffRate, float deltaTime) {
             }
         }
     }
+    setBoundaries(0, densityGrid);
 };
 
 void FluidGrid::addVelocity(int x, int y, float velocityX, float velocityY) {
@@ -95,6 +97,9 @@ void FluidGrid::project() {
             pressure[x + gridWidth * y] = 0;
         }
     }
+    setBoundaries(0, divergence);
+    setBoundaries(0, pressure);
+
     for (int k = 0; k < 20; k++) {
         for (int y = 1; y < gridWidth - 1; y++) {
             for (int x = 1; x < gridWidth - 1; x++) {
@@ -104,21 +109,39 @@ void FluidGrid::project() {
             }
         }
     }
+    setBoundaries(0, pressure);
+
     for (int y = 1; y < gridWidth - 1; y++) {
         for (int x = 1; x < gridWidth - 1; x++) {
             horizontalVelocity[x + gridWidth * y] -= 0.5f * (pressure[(x + 1) + gridWidth * y] - pressure[(x - 1) + gridWidth * y]) * gridWidth;
             verticalVelocity[x + gridWidth * y] -= 0.5f * (pressure[x + gridWidth * (y + 1)] - pressure[x + gridWidth * (y - 1)]) * gridWidth;
         }
     }
+    setBoundaries(1, horizontalVelocity);
+    setBoundaries(2, verticalVelocity);
 }
 
 void FluidGrid::step() {
     tempHorizontalVelocity = horizontalVelocity;
     tempVerticalVelocity = verticalVelocity;
-    tempDensityGrid = densityGrid;
     advect(horizontalVelocity, tempHorizontalVelocity);
     advect(verticalVelocity, tempVerticalVelocity);
     project();
+    tempDensityGrid = densityGrid;
     advect(densityGrid, tempDensityGrid);
     diffuse(diffRate, deltaTime);
 };
+
+void FluidGrid::setBoundaries(int b, std::vector<float>& x) {
+    for (int i = 1; i < gridWidth - 1; i++) {
+        x[0 + gridWidth * i] = (b == 1) ? -x[1 + gridWidth * i] : x[1 + gridWidth * i];
+        x[(gridWidth - 1) + gridWidth * i] = (b == 1) ? -x[(gridWidth - 2) + gridWidth * i] : x[(gridWidth - 2) + gridWidth * i];
+        x[i + gridWidth * 0] = (b == 2) ? -x[i + gridWidth * 1] : x[i + gridWidth * 1];
+        x[i + gridWidth * (gridWidth - 1)] = (b == 2) ? -x[i + gridWidth * (gridWidth - 2)] : x[i + gridWidth * (gridWidth - 2)];
+    }
+    // Corners
+    x[0 + gridWidth * 0] = 0.5f * (x[1 + gridWidth * 0] + x[0 + gridWidth * 1]);
+    x[0 + gridWidth * (gridWidth - 1)] = 0.5f * (x[1 + gridWidth * (gridWidth - 1)] + x[0 + gridWidth * (gridWidth - 2)]);
+    x[(gridWidth - 1) + gridWidth * 0] = 0.5f * (x[(gridWidth - 2) + gridWidth * 0] + x[(gridWidth - 1) + gridWidth * 1]);
+    x[(gridWidth - 1) + gridWidth * (gridWidth - 1)] = 0.5f * (x[(gridWidth - 2) + gridWidth * (gridWidth - 1)] + x[(gridWidth - 1) + gridWidth * (gridWidth - 2)]);
+}
