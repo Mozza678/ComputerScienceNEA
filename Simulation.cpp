@@ -73,9 +73,15 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
         int gridY = mousePos.y / scale;
 
         if (gridX > 0 && gridX < gridWidth - 1 && gridY > 0 && gridY < gridWidth - 1) {
-            fluidGrid.setValue(fluidGrid.densityGrid, gridX, gridY, 100.0f); 
+            float currentDensity = fluidGrid.getValue(fluidGrid.densityGrid, gridX, gridY);
+            fluidGrid.setValue(fluidGrid.densityGrid, gridX, gridY, currentDensity + fluidAddedOnClick); 
             fluidGrid.addVelocity(gridX, gridY, mouseVelX, mouseVelY);
         }
+
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) {
+            fluidGrid.addVelocity(gridX, gridY, mouseVelX, mouseVelY);
+        }
+        
         lastMousePos = mousePos; //stores mouse pos for current frame (will be previous frame when accessed)
     }
 }
