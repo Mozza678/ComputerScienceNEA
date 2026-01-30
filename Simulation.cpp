@@ -36,6 +36,8 @@ void Simulation::run(){
     sf::RenderWindow window(sf::VideoMode({500, 500}), "Fluid Simulator"); // set up the window
     window.setFramerateLimit(60); // set frame rate to 60
 
+    fluidGrid.setup();
+
     while (window.isOpen()) {
         while (auto event = window.pollEvent()) { // check for SFML events
             if (event->is<sf::Event::Closed>()) {
@@ -63,15 +65,28 @@ void Simulation::updatePixelBuffer() {
 
 void Simulation::checkForMouseInput(sf::RenderWindow& window) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-    static sf::Vector2i lastMousePos = mousePos;
+    
+    static sf::Vector2i lastMousePos;
+
+    int deltaX = mousePos.x - lastMousePos.x;
+    int deltaY = mousePos.y - lastMousePos.y;
 
     int gridX = mousePos.x / scale;
     int gridY = mousePos.y / scale;
 
     if (gridX > 0 && gridX < gridWidth - 1 && gridY > 0 && gridY < gridWidth - 1) {
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+            // Add Density
             float currentDensity = fluidGrid.getValue(fluidGrid.densityGrid, gridX, gridY);
             fluidGrid.setValue(fluidGrid.densityGrid, gridX, gridY, currentDensity + fluidAddedOnClick); 
+            
+            // Add Velocity based on mouse drag speed
+            // We cast to float to ensure the multiplication with velocityAddedOnClick is precise
+            float currentVX = fluidGrid.getValue(fluidGrid.xvelocityGrid, gridX, gridY);
+            float currentVY = fluidGrid.getValue(fluidGrid.yvelocityGrid, gridX, gridY);
+            
+            fluidGrid.setValue(fluidGrid.xvelocityGrid, gridX, gridY, currentVX + (static_cast<float>(deltaX) * velocityAddedOnClick));
+            fluidGrid.setValue(fluidGrid.yvelocityGrid, gridX, gridY, currentVY + (static_cast<float>(deltaY) * velocityAddedOnClick));
         }
     }
     lastMousePos = mousePos; 
