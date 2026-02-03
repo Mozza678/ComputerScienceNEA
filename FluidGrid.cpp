@@ -18,42 +18,39 @@ void FluidGrid::setValue(std::vector<float>& grid, int x, int y, float newValue)
     grid[x + gridWidth * y] = newValue;
 };
 
-void FluidGrid::diffuse(int b, std::vector<float>& x, std::vector<float>& x0, float diff, float dt) {
-    float a = dt * diff * (gridWidth - 2) * (gridWidth - 2);
-    for (int k = 0; k < 20; k++) {
+void FluidGrid::diffuse(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid) {
+    float spreadingFactor = deltaTime * diffRate * (gridWidth - 2) * (gridWidth - 2);
+
+    for (int pass = 0; pass < 20; pass++) {
         for (int y = 1; y < gridWidth - 1; y++) {
-            for (int x_idx = 1; x_idx < gridWidth - 1; x_idx++) {
-                // Use the passed in 'x' and 'x0' instead of hardcoded densityGrid
-                x[x_idx + gridWidth * y] = (x0[x_idx + gridWidth * y] + a * (
-                    x[x_idx - 1 + gridWidth * y] + x[x_idx + 1 + gridWidth * y] +
-                    x[x_idx + gridWidth * (y - 1)] + x[x_idx + gridWidth * (y + 1)]
-                )) / (1 + 4 * a);
+            for (int x = 1; x < gridWidth - 1; x++) {
+                grid[x + gridWidth * y] = (tempGrid[x + gridWidth * y] + 
+                    spreadingFactor * (
+                        grid[x - 1 + gridWidth * y] + 
+                        grid[x + 1 + gridWidth * y] +
+                        grid[x + gridWidth * (y - 1)] + 
+                        grid[x + gridWidth * (y + 1)]))
+                    / (1 + 4 * spreadingFactor);
             }
         }
-        setBoundaries(b, x); 
+        setBoundaries(boundaryType, grid); 
     }
 }
 
 void FluidGrid::step() {
-    // --- VELOCITY STEP ---
-    // 1. Snapshot for Velocity Diffusion
     tempxVelocityGrid = xvelocityGrid;
     tempyVelocityGrid = yvelocityGrid;
-    diffuse(1, xvelocityGrid, tempxVelocityGrid, diffRate, deltaTime);
-    diffuse(2, yvelocityGrid, tempyVelocityGrid, diffRate, deltaTime);
+    diffuse(1, xvelocityGrid, tempxVelocityGrid);
+    diffuse(2, yvelocityGrid, tempyVelocityGrid);
 
-    // 2. Snapshot for Velocity Advection (Velocity moves itself)
     tempxVelocityGrid = xvelocityGrid;
     tempyVelocityGrid = yvelocityGrid;
     advect(1, xvelocityGrid, tempxVelocityGrid);
     advect(2, yvelocityGrid, tempyVelocityGrid);
 
-    // --- DENSITY STEP ---
-    // 3. Snapshot for Density Diffusion
     tempDensityGrid = densityGrid;
-    diffuse(0, densityGrid, tempDensityGrid, diffRate, deltaTime);
+    diffuse(0, densityGrid, tempDensityGrid);
 
-    // 4. Snapshot for Density Advection (Smoke moves along the wind)
     tempDensityGrid = densityGrid; 
     advect(0, densityGrid, tempDensityGrid);
 }
@@ -61,21 +58,36 @@ void FluidGrid::step() {
 void FluidGrid::setup() {
 };
 
-void FluidGrid::setBoundaries(int b, std::vector<float>& x) {
+void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) {
     for (int i = 1; i < gridWidth - 1; i++) {
-        x[0 + gridWidth * i] = (b == 1) ? -x[1 + gridWidth * i] : x[1 + gridWidth * i];
-        x[(gridWidth - 1) + gridWidth * i] = (b == 1) ? -x[(gridWidth - 2) + gridWidth * i] : x[(gridWidth - 2) + gridWidth * i];
-        x[i + gridWidth * 0] = (b == 2) ? -x[i + gridWidth * 1] : x[i + gridWidth * 1];
-        x[i + gridWidth * (gridWidth - 1)] = (b == 2) ? -x[i + gridWidth * (gridWidth - 2)] : x[i + gridWidth * (gridWidth - 2)];
+        if (boundaryType == 1) {
+            grid[0 + gridWidth * i] = -grid[1 + gridWidth * i];
+        } else {
+            grid[0 + gridWidth * i] = grid[1 + gridWidth * i];
+        };
+        if (boundaryType == 1) {
+            grid[(gridWidth - 1) + gridWidth * i] = -grid[(gridWidth - 2) + gridWidth * i];
+        } else {
+            grid[(gridWidth - 1) + gridWidth * i] = grid[(gridWidth - 2) + gridWidth * i];
+        };
+        if (boundaryType == 2) {
+            grid[i] = -grid[i + gridWidth];
+        } else {
+            grid[i] =  grid[i + gridWidth];
+        };
+        if (boundaryType == 2) {
+            grid[i + gridWidth * (gridWidth - 1)] = -grid[i + gridWidth * (gridWidth - 1)];
+        } else {
+            grid[i + gridWidth * (gridWidth - 1)] = grid[i + gridWidth * (gridWidth - 1)];
+        }
     }
-    // Corners
-    x[0 + gridWidth * 0] = 0.5f * (x[1 + gridWidth * 0] + x[0 + gridWidth * 1]);
-    x[0 + gridWidth * (gridWidth - 1)] = 0.5f * (x[1 + gridWidth * (gridWidth - 1)] + x[0 + gridWidth * (gridWidth - 2)]);
-    x[(gridWidth - 1) + gridWidth * 0] = 0.5f * (x[(gridWidth - 2) + gridWidth * 0] + x[(gridWidth - 1) + gridWidth * 1]);
-    x[(gridWidth - 1) + gridWidth * (gridWidth - 1)] = 0.5f * (x[(gridWidth - 2) + gridWidth * (gridWidth - 1)] + x[(gridWidth - 1) + gridWidth * (gridWidth - 2)]);
+    grid[0] = 0.5f * (grid[1] + grid[gridWidth]);
+    grid[gridWidth * (gridWidth - 1)] = 0.5f * (grid[1 + gridWidth * (gridWidth - 1)] + grid[gridWidth * (gridWidth - 2)]);
+    grid[(gridWidth - 1)] = 0.5f * (grid[(gridWidth - 2) + gridWidth * 0] + grid[(gridWidth - 1) + gridWidth * 1]);
+    grid[(gridWidth - 1) + gridWidth * (gridWidth - 1)] = 0.5f * (grid[(gridWidth - 2) + gridWidth * (gridWidth - 1)] + grid[(gridWidth - 1) + gridWidth * (gridWidth - 2)]);
 }
 
-void FluidGrid::advect(int boundary, std::vector<float>& grid, std::vector<float>& tempGrid) {
+void FluidGrid::advect(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid) {
 
     float neighbourLeft, neighbourRight, neighbourAbove, neighbourBelow;
     float neighbourLeftWeight, neighbourRightWeight, neighbourAboveWeight, neighbourBelowWeight;
@@ -126,5 +138,5 @@ void FluidGrid::advect(int boundary, std::vector<float>& grid, std::vector<float
         }
     }
 
-    setBoundaries(boundary, grid);
+    setBoundaries(boundaryType, grid);
 }

@@ -7,9 +7,9 @@ private:
     std::vector<float> tempDensityGrid;
     std::vector<float> tempxVelocityGrid;
     std::vector<float> tempyVelocityGrid;
-    void diffuse(int b, std::vector<float>& x, std::vector<float>& x0, float diff, float dt);
-    void setBoundaries(int b, std::vector<float>& x);
-    void advect(int b, std::vector<float>& grid, std::vector<float>& tempGrid);
+    void diffuse(int boundaryType, std::vector<float>& x, std::vector<float>& x0);
+    void setBoundaries(int boundaryType, std::vector<float>& x);
+    void advect(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid);
 public:
     FluidGrid(int gridSize);
     std::vector<float> densityGrid;
