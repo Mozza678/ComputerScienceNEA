@@ -5,7 +5,7 @@
 #include <algorithm>
 
 Simulation::Simulation() // simulation constructor
-    : pixelBuffer(4 * gridWidth * gridWidth), // define the pixel buffer
+    : pixelBuffer(4 * gridWidth * gridWidth), // initialize the pixel buffer
       gridTexture({static_cast<unsigned int>(gridWidth), static_cast<unsigned int>(gridWidth)}), // define the grid texture
       fluidGrid(gridWidth)
     {

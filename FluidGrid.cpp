@@ -5,7 +5,9 @@ FluidGrid::FluidGrid(int gridSize)
     : densityGrid(gridSize * gridSize),
       tempDensityGrid(gridSize * gridSize),
       xvelocityGrid(gridSize * gridSize),
-      yvelocityGrid(gridSize * gridSize)
+      yvelocityGrid(gridSize * gridSize),
+      divergenceGrid(gridSize * gridSize), 
+      pressureGrid(gridSize * gridSize)
     {
 
     };
@@ -42,11 +44,13 @@ void FluidGrid::step() {
     tempyVelocityGrid = yvelocityGrid;
     diffuse(1, xvelocityGrid, tempxVelocityGrid);
     diffuse(2, yvelocityGrid, tempyVelocityGrid);
+    project(xvelocityGrid, yvelocityGrid, divergenceGrid, pressureGrid);
 
     tempxVelocityGrid = xvelocityGrid;
     tempyVelocityGrid = yvelocityGrid;
     advect(1, xvelocityGrid, tempxVelocityGrid);
     advect(2, yvelocityGrid, tempyVelocityGrid);
+    project(xvelocityGrid, yvelocityGrid, divergenceGrid, pressureGrid);
 
     tempDensityGrid = densityGrid;
     diffuse(0, densityGrid, tempDensityGrid);
@@ -76,15 +80,52 @@ void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) {
             grid[i] =  grid[i + gridWidth];
         };
         if (boundaryType == 2) {
-            grid[i + gridWidth * (gridWidth - 1)] = -grid[i + gridWidth * (gridWidth - 1)];
+            grid[i + gridWidth * (gridWidth - 1)] = -grid[i + gridWidth * (gridWidth - 2)];
         } else {
-            grid[i + gridWidth * (gridWidth - 1)] = grid[i + gridWidth * (gridWidth - 1)];
+            grid[i + gridWidth * (gridWidth - 1)] = grid[i + gridWidth * (gridWidth - 2)];
         }
     }
     grid[0] = 0.5f * (grid[1] + grid[gridWidth]);
     grid[gridWidth * (gridWidth - 1)] = 0.5f * (grid[1 + gridWidth * (gridWidth - 1)] + grid[gridWidth * (gridWidth - 2)]);
     grid[(gridWidth - 1)] = 0.5f * (grid[(gridWidth - 2) + gridWidth * 0] + grid[(gridWidth - 1) + gridWidth * 1]);
     grid[(gridWidth - 1) + gridWidth * (gridWidth - 1)] = 0.5f * (grid[(gridWidth - 2) + gridWidth * (gridWidth - 1)] + grid[(gridWidth - 1) + gridWidth * (gridWidth - 2)]);
+}
+
+void FluidGrid::project(std::vector<float>& xvelocityGrid, std::vector<float>& yvelocityGrid, std::vector<float>& divergenceGrid, std::vector<float>& pressureGrid) {
+
+    float cellSize = 1.0f / gridWidth;
+
+    for (int y = 1; y < gridWidth - 1; y++) {
+        for (int x = 1; x < gridWidth - 1; x++) {
+            divergenceGrid[x + gridWidth * y] = -0.5f * cellSize * (
+                                                xvelocityGrid[x + 1 + gridWidth * y] - xvelocityGrid[x - 1 + gridWidth * y] +
+                                                yvelocityGrid[x + gridWidth * (y + 1)] - yvelocityGrid[x + gridWidth * (y - 1)]);
+            pressureGrid[x + gridWidth * y] = 0;
+        }
+    }
+
+    setBoundaries(0, divergenceGrid);
+    setBoundaries(0, pressureGrid);
+
+    for (int repetition = 0; repetition < 20; repetition++) {
+        for (int y = 1; y < gridWidth - 1; y++) {
+            for (int x = 1; x < gridWidth - 1; x++) {
+                pressureGrid[x + gridWidth * y] = (divergenceGrid[x + gridWidth * y] +
+                                                   pressureGrid[x + 1 + gridWidth * y] + pressureGrid[x - 1 + gridWidth * y] +
+                                                   pressureGrid[x + gridWidth * (y + 1)] + pressureGrid[x + gridWidth * (y - 1)]) / 4.0f;
+            }
+        }
+        setBoundaries(0, pressureGrid);
+    }
+
+    for (int y = 1; y < gridWidth - 1; y++) {
+        for (int x = 1; x < gridWidth - 1; x++) {
+            xvelocityGrid[x + gridWidth * y] -= 0.5f * (pressureGrid[x + 1 + gridWidth * y] - pressureGrid[x - 1 + gridWidth * y]) / cellSize;
+            yvelocityGrid[x + gridWidth * y] -= 0.5f * (pressureGrid[x + gridWidth * (y + 1)] - pressureGrid[x + gridWidth * (y - 1)]) / cellSize;
+        }
+    }
+    setBoundaries(1, xvelocityGrid);
+    setBoundaries(2, yvelocityGrid);
 }
 
 void FluidGrid::advect(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid) {
