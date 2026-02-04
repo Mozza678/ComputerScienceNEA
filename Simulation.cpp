@@ -8,6 +8,7 @@ Simulation::Simulation() // simulation constructor
     : pixelBuffer(4 * gridWidth * gridWidth), // initialize the pixel buffer
       gridTexture({static_cast<unsigned int>(gridWidth), static_cast<unsigned int>(gridWidth)}), // define the grid texture
       fluidGrid(gridWidth)
+      
     {
         std::fill(pixelBuffer.begin(), pixelBuffer.end(), 255); // fill the pixel buffer with 255
         gridTextureSpritePtr = std::make_unique<sf::Sprite>(gridTexture); // create pointer to the grid texture sprite
@@ -27,7 +28,7 @@ std::vector<std::uint8_t> Simulation::assignDensityToPixelBuffer(float density, 
     return pixelColourValues;
 };
 
-void Simulation::updateGridSprite() {
+void Simulation::updateGridTexture() {
     gridTexture.update(pixelBuffer.data()); // update the texture with the pixel buffer data
 };
 
@@ -49,7 +50,7 @@ void Simulation::run(){
         checkForMouseInput(window);
         fluidGrid.step();
         updatePixelBuffer();
-        updateGridSprite();
+        updateGridTexture();
         window.clear({0,255,0}); // wipe the previous frame
         window.draw(*gridTextureSpritePtr); // draw the sprite to the screen
         window.display(); // display new updates
@@ -96,6 +97,12 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
             fluidGrid.setValue(fluidGrid.xvelocityGrid, gridX, gridY, currentVX + (static_cast<float>(deltaX) * velocityAddedOnClick));
             fluidGrid.setValue(fluidGrid.yvelocityGrid, gridX, gridY, currentVY + (static_cast<float>(deltaY) * velocityAddedOnClick));
         }
-    }
+
+    } else if (gridX > 0 && gridX < gridWidth - 1 && gridY > gridWidth - 1 && gridY < gridWidth + buttonPanelSize) {
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) { 
+
+        }
+    };
+
     lastMousePos = mousePos; 
 }

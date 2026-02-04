@@ -16,7 +16,7 @@ private:
     std::unique_ptr<sf::Sprite> gridTextureSpritePtr;
     FluidGrid fluidGrid;
 
-    void updateGridSprite();
+    void updateGridTexture();
     void updatePixelBuffer();
     void checkForMouseInput(sf::RenderWindow& window);
 };
