@@ -1,14 +1,17 @@
 #include "Simulation.h"
 #include "FluidGrid.h"
 #include "settings.h"
+#include "button.h"
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 Simulation::Simulation() // simulation constructor
     : pixelBuffer(4 * gridWidth * gridWidth), // initialize the pixel buffer
-      gridTexture({static_cast<unsigned int>(gridWidth), static_cast<unsigned int>(gridWidth)}), // define the grid texture
-      fluidGrid(gridWidth)
-      
+      gridTexture({static_cast<unsigned int>(gridWidth),
+      static_cast<unsigned int>(gridWidth)}), // define the grid texture
+      fluidGrid(gridWidth),
+      showVelocityButton(static_cast<float>(1 * scale), static_cast<float>(1 * scale + scale * gridWidth), 200, 80)
     {
         std::fill(pixelBuffer.begin(), pixelBuffer.end(), 255); // fill the pixel buffer with 255
         gridTextureSpritePtr = std::make_unique<sf::Sprite>(gridTexture); // create pointer to the grid texture sprite
@@ -53,6 +56,7 @@ void Simulation::run(){
         updateGridTexture();
         window.clear({0,255,0}); // wipe the previous frame
         window.draw(*gridTextureSpritePtr); // draw the sprite to the screen
+        showVelocityButton.render(window);
         window.display(); // display new updates
     }
 };
@@ -100,7 +104,10 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
 
     } else if (gridX > 0 && gridX < gridWidth - 1 && gridY > gridWidth - 1 && gridY < gridWidth + buttonPanelSize) {
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) { 
-
+            if (showVelocityButton.checkIfHoveringOver(mousePos.x, mousePos.y) && showVelocityButton.elapsedTime.getElapsedTime().asSeconds() > 0.5f) {
+                showVelocityButton.isPressed = !showVelocityButton.isPressed;
+                showVelocityButton.stateChanged = true;
+            }
         }
     };
 

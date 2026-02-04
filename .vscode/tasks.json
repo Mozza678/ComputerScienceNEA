@@ -13,6 +13,7 @@
                 "${fileDirname}\\main.cpp",
                 "${fileDirname}\\Simulation.cpp",
                 "${fileDirname}\\FluidGrid.cpp",
+                "${fileDirname}\\button.cpp",
                 
                 // 2. LIBRARY PATH
                 "-LC:\\SFML-3.0.2\\lib",
@@ -23,7 +24,7 @@
                 "-lsfml-system-d",
                 
                 // 4. CRITICAL WINDOWS/SFML DEPENDENCIES (The missing pieces!)
-                "-lsfml-main-d", // ⬅️ ADD THIS
+                "-lsfml-main-d",
                 
                 // 5. OUTPUT
                 "-o",

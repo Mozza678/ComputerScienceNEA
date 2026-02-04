@@ -1,17 +1,22 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+#include <memory>
 
 class button {
 private:
     sf::Texture textureActive;
     sf::Texture textureInactive;
-    bool isPressed;
-    int xPos;
-    int yPos;
+    float xPos;
+    float yPos;
     int xSize;
     int ySize;
+    std::unique_ptr<sf::Sprite> buttonSprite;
 public:
-    button(int xPos, int yPos, int xSize, int ySize);
+    sf::Clock elapsedTime;
+    button(float xPos, float yPos, int xSize, int ySize);
     void render(sf::RenderWindow& window);
-    void checkIfPressed(int mousePosX, int mousePosY);
+    bool checkIfHoveringOver(int mousePosX, int mousePosY);
+    bool isPressed;
+    bool stateChanged;
 };

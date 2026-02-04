@@ -3,11 +3,14 @@
 #include <SFML/Graphics.hpp>
 #include "settings.h"
 #include "FluidGrid.h"
+#include "button.h"
+#include <memory>
 
 class Simulation {
 public:
     Simulation();
     void run();
+    button showVelocityButton;
     
 private:
     std::vector<std::uint8_t> pixelBuffer;
