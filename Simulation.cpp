@@ -5,12 +5,13 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <math.h>
 
 Simulation::Simulation() // simulation constructor
     : pixelBuffer(4 * gridWidth * gridWidth), // initialize the pixel buffer
       gridTexture({static_cast<unsigned int>(gridWidth),
       static_cast<unsigned int>(gridWidth)}), // define the grid texture
-      fluidGrid(gridWidth),
+      fluidGrid(),
       showVelocityButton(static_cast<float>(1 * scale), static_cast<float>(1 * scale + scale * gridWidth), 200, 80)
     {
         std::fill(pixelBuffer.begin(), pixelBuffer.end(), 255); // fill the pixel buffer with 255
@@ -18,7 +19,7 @@ Simulation::Simulation() // simulation constructor
         (*gridTextureSpritePtr).setScale({static_cast<float>(scale), static_cast<float>(scale)}); // set the scale of the sprite to ensure it fills the screen
     }
 
-std::vector<std::uint8_t> Simulation::assignDensityToPixelBuffer(float density, int x, int y){
+void Simulation::assignDensityToPixelBuffer(float density, int x, int y){
     std::vector<std::uint8_t> pixelColourValues; // create single dimension vector of pixel colour values in the format RGBA
     int integerDensity = static_cast<int>(std::clamp(density, 0.0f, 1.0f) * 255); // convert the float density value into a value inbetween 0 and 255
     for (int i = 0; i < 3; i++) {
@@ -28,8 +29,27 @@ std::vector<std::uint8_t> Simulation::assignDensityToPixelBuffer(float density, 
     for (int i = 0; i < pixelColourValues.size(); i++) {
         pixelBuffer[(4 * (x + gridWidth * y)) + i] = pixelColourValues[i]; // add the pixel colour values found from the function above to the correct box located through cartesian co-ordinates
     }
-    return pixelColourValues;
 };
+
+void Simulation::assignVelocityAndDensityToPixelBuffer(float density, float velocityX, float velocityY, int x, int y) {
+    std::vector<std::uint8_t> pixelColourValues;
+    int integerDensity = static_cast<int>(std::clamp(density, 0.0f, 1.0f) * 255);
+    int velocityMagnitude = std::clamp(static_cast<int>((pow(pow(velocityX, 2) + pow(velocityY, 2), 0.5f)) / pow(2, 0.5) * 255), 0, 64) * 4;
+    if (velocityMagnitude < 128) {
+        pixelColourValues.push_back(255 - 2 * velocityMagnitude);
+        pixelColourValues.push_back(2 * velocityMagnitude);
+        pixelColourValues.push_back(0);
+        pixelColourValues.push_back(integerDensity);
+    } else if (velocityMagnitude >= 128) {
+        pixelColourValues.push_back(0);
+        pixelColourValues.push_back(256 - (velocityMagnitude - 128) * 2);
+        pixelColourValues.push_back((velocityMagnitude - 128) * 2);
+        pixelColourValues.push_back(integerDensity);
+    };
+    for (int i = 0; i < pixelColourValues.size(); i++) {
+        pixelBuffer[(4 * (x + gridWidth * y)) + i] = pixelColourValues[i]; // add the pixel colour values found from the function above to the correct box located through cartesian co-ordinates
+    };
+}
 
 void Simulation::updateGridTexture() {
     gridTexture.update(pixelBuffer.data()); // update the texture with the pixel buffer data
@@ -54,7 +74,7 @@ void Simulation::run(){
         fluidGrid.step();
         updatePixelBuffer();
         updateGridTexture();
-        window.clear({0,255,0}); // wipe the previous frame
+        window.clear({255,255,255}); // wipe the previous frame
         window.draw(*gridTextureSpritePtr); // draw the sprite to the screen
         showVelocityButton.render(window);
         window.display(); // display new updates
@@ -65,7 +85,13 @@ void Simulation::updatePixelBuffer() {
     for (int y = 0; y < gridWidth; ++y) {   // loop through all y co-ordinates
         for (int x = 0; x < gridWidth; ++x) {   // loop through all x co-ordinates
             float density = fluidGrid.getValue(fluidGrid.densityGrid, x, y);    // retrieve density value from fluid grid at that specific co-ordinate
-            assignDensityToPixelBuffer(density, x, y);
+            if (showVelocityButton.isPressed) {
+                float velocityX = fluidGrid.getValue(fluidGrid.xvelocityGrid, x, y);
+                float velocityY = fluidGrid.getValue(fluidGrid.yvelocityGrid, x, y);
+                assignVelocityAndDensityToPixelBuffer(density, velocityX, velocityY, x, y);
+            } else {
+                assignDensityToPixelBuffer(density, x, y);
+            }
         }
     }
 }

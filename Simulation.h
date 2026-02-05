@@ -14,7 +14,8 @@ public:
     
 private:
     std::vector<std::uint8_t> pixelBuffer;
-    std::vector<std::uint8_t> assignDensityToPixelBuffer(float density, int x, int y);
+    void assignDensityToPixelBuffer(float density, int x, int y);
+    void assignVelocityAndDensityToPixelBuffer(float density, float velocityX, float velocityY, int x, int y);
     sf::Texture gridTexture;
     std::unique_ptr<sf::Sprite> gridTextureSpritePtr;
     FluidGrid fluidGrid;

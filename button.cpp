@@ -39,4 +39,3 @@ bool button::checkIfHoveringOver(int mousePosX, int mousePosY) {
         return false;
     }
 };
-
