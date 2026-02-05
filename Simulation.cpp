@@ -34,7 +34,7 @@ void Simulation::assignDensityToPixelBuffer(float density, int x, int y){
 void Simulation::assignVelocityAndDensityToPixelBuffer(float density, float velocityX, float velocityY, int x, int y) {
     std::vector<std::uint8_t> pixelColourValues;
     int integerDensity = static_cast<int>(std::clamp(density, 0.0f, 1.0f) * 255);
-    int velocityMagnitude = std::clamp(static_cast<int>((pow(pow(velocityX, 2) + pow(velocityY, 2), 0.5f)) / pow(2, 0.5) * 255), 0, 64) * 4;
+    int velocityMagnitude = std::clamp(static_cast<int>((pow(pow(velocityX, 2) + pow(velocityY, 2), 0.5f)) / pow(2, 0.5) * 255), 0, 63) * 4;
     if (velocityMagnitude < 128) {
         pixelColourValues.push_back(255 - 2 * velocityMagnitude);
         pixelColourValues.push_back(2 * velocityMagnitude);
@@ -42,7 +42,7 @@ void Simulation::assignVelocityAndDensityToPixelBuffer(float density, float velo
         pixelColourValues.push_back(integerDensity);
     } else if (velocityMagnitude >= 128) {
         pixelColourValues.push_back(0);
-        pixelColourValues.push_back(256 - (velocityMagnitude - 128) * 2);
+        pixelColourValues.push_back(255 - (velocityMagnitude - 128) * 2);
         pixelColourValues.push_back((velocityMagnitude - 128) * 2);
         pixelColourValues.push_back(integerDensity);
     };
