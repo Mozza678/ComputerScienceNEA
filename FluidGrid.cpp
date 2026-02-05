@@ -34,7 +34,7 @@ void FluidGrid::diffuse(int boundaryType, std::vector<float>& grid, std::vector<
                         grid[x + 1 + gridWidth * y] +
                         grid[x + gridWidth * (y - 1)] + 
                         grid[x + gridWidth * (y + 1)]))
-                    / (1 + 4 * spreadingFactor); // equation for solving density taken from jon stams paper
+                    / (1 + 4 * spreadingFactor); // equation for solving density taken from jon stams paper "Real Time Fluid Dynamics for Games"
             }
         }
         setBoundaries(boundaryType, grid); // set boundries fucntion called using the parameter passed in diffuse
@@ -65,48 +65,57 @@ void FluidGrid::step() {
 void FluidGrid::setup() {
 };
 
-void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) { // this essentially creates a "wall" around the grid so fluid can't escape
+void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) { // this essentially creates a "wall" around the grid so fluid can't escape and is instead reflected
                                                                             // the boundaryType parameter has three settings : 0 - Mirroring density at walls
                                                                             //                                                 1 - Reflecting x velocity at left and right walls
                                                                             //                                                 2 - Reflecting y velocity at top and bottom walls
-    for (int i = 1; i < gridWidth - 1; i++) {
-        if (boundaryType == 1) {
+    
+    for (int i = 1; i < gridWidth - 1; i++) { // loop to scan through all cells on the border. x and y not used as only those on the border need to be checked
+        if (boundaryType == 1) { // This accesses the left wall
+                                 // If in boundaryType 1 it will reflect the x velocity of the adjacent cell so that at the boundary between the two cells there is net zero x velocity meaning no fluid can escape
+                                 // If in boundaryType 0 or 2 it will simply copy the contents of the adjacent cell. When performed on the density this means no diffusion will take place towards the wall
             grid[0 + gridWidth * i] = -grid[1 + gridWidth * i];
         } else {
             grid[0 + gridWidth * i] = grid[1 + gridWidth * i];
         };
-        if (boundaryType == 1) {
+        if (boundaryType == 1) { // This accesses the right wall            
             grid[(gridWidth - 1) + gridWidth * i] = -grid[(gridWidth - 2) + gridWidth * i];
         } else {
             grid[(gridWidth - 1) + gridWidth * i] = grid[(gridWidth - 2) + gridWidth * i];
         };
-        if (boundaryType == 2) {
+        if (boundaryType == 2) { // this accesses the top wall
+                                 // If in boundaryType 2 it will reflect the y velocity of the adjacent cell so that at the boundary between the two cells there is net zero y velocity meaning no fluid can escape
+                                 // If in boundaryType 0 or 2 it will simply copy the contents of the adjacent cell. When performed on the density this means no diffusion will take place towards the wall
             grid[i] = -grid[i + gridWidth];
         } else {
             grid[i] =  grid[i + gridWidth];
         };
-        if (boundaryType == 2) {
+        if (boundaryType == 2) { // this accesses the bottom wall
             grid[i + gridWidth * (gridWidth - 1)] = -grid[i + gridWidth * (gridWidth - 2)];
         } else {
             grid[i + gridWidth * (gridWidth - 1)] = grid[i + gridWidth * (gridWidth - 2)];
         }
     }
-    grid[0] = 0.5f * (grid[1] + grid[gridWidth]);
-    grid[gridWidth * (gridWidth - 1)] = 0.5f * (grid[1 + gridWidth * (gridWidth - 1)] + grid[gridWidth * (gridWidth - 2)]);
-    grid[(gridWidth - 1)] = 0.5f * (grid[(gridWidth - 2) + gridWidth * 0] + grid[(gridWidth - 1) + gridWidth * 1]);
-    grid[(gridWidth - 1) + gridWidth * (gridWidth - 1)] = 0.5f * (grid[(gridWidth - 2) + gridWidth * (gridWidth - 1)] + grid[(gridWidth - 1) + gridWidth * (gridWidth - 2)]);
+
+    // The following code sets the boundary values for the corners. The averages the two adjacent cells and sets the corners value to the result.
+    
+    grid[0] = 0.5f * (grid[1] + grid[gridWidth]); // top left corner
+    grid[gridWidth * (gridWidth - 1)] = 0.5f * (grid[1 + gridWidth * (gridWidth - 1)] + grid[gridWidth * (gridWidth - 2)]); // bottom left corner
+    grid[(gridWidth - 1)] = 0.5f * (grid[(gridWidth - 2) + gridWidth * 0] + grid[(gridWidth - 1) + gridWidth * 1]); // top right corner
+    grid[(gridWidth - 1) + gridWidth * (gridWidth - 1)] = 0.5f * (grid[(gridWidth - 2) + gridWidth * (gridWidth - 1)] + grid[(gridWidth - 1) + gridWidth * (gridWidth - 2)]); // bottom right corner
 }
 
 void FluidGrid::project(std::vector<float>& xvelocityGrid, std::vector<float>& yvelocityGrid, std::vector<float>& divergenceGrid, std::vector<float>& pressureGrid) {
 
-    float cellSize = 1.0f / gridWidth;
+    float cellSize = 1.0f / gridWidth; // calculates the size of one cell relative to the grid
 
-    for (int y = 1; y < gridWidth - 1; y++) {
-        for (int x = 1; x < gridWidth - 1; x++) {
+    for (int y = 1; y < gridWidth - 1; y++) { // loops through all rows
+        for (int x = 1; x < gridWidth - 1; x++) { // loops through all columns
             divergenceGrid[x + gridWidth * y] = -0.5f * cellSize * (
                                                 xvelocityGrid[x + 1 + gridWidth * y] - xvelocityGrid[x - 1 + gridWidth * y] +
-                                                yvelocityGrid[x + gridWidth * (y + 1)] - yvelocityGrid[x + gridWidth * (y - 1)]);
-            pressureGrid[x + gridWidth * y] = 0;
+                                                yvelocityGrid[x + gridWidth * (y + 1)] - yvelocityGrid[x + gridWidth * (y - 1)]); // calculates the divergence of each cell and assignes each value to the grid
+                                                                                                                                  // formula taken from jon stams paper "Real Time Fluid Dynamics for Games"
+            pressureGrid[x + gridWidth * y] = 0; // resets the pressure grid before calculation
         }
     }
 
