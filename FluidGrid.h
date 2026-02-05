@@ -14,7 +14,7 @@ private:
     void advect(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid);
     void project(std::vector<float>& xvelocityGrid, std::vector<float>& yvelocityGrid, std::vector<float>& divergenceGrid, std::vector<float>& pressureGrid);
 public:
-    FluidGrid(int gridSize);
+    FluidGrid();
     std::vector<float> densityGrid;
     std::vector<float> xvelocityGrid;
     std::vector<float> yvelocityGrid;
