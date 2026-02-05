@@ -119,28 +119,28 @@ void FluidGrid::project(std::vector<float>& xvelocityGrid, std::vector<float>& y
         }
     }
 
-    setBoundaries(0, divergenceGrid);
-    setBoundaries(0, pressureGrid);
+    setBoundaries(0, divergenceGrid); // the divergence grid boundaries are set using the mirror mode as divergence can be treated the same as density when setting the boundaries
+    setBoundaries(0, pressureGrid); // the pressure grid boundaries are set using the mirror mode as pressure can be treated the same as density when setting the boundary
 
-    for (int repetition = 0; repetition < 20; repetition++) {
-        for (int y = 1; y < gridWidth - 1; y++) {
-            for (int x = 1; x < gridWidth - 1; x++) {
+    for (int repetition = 0; repetition < 20; repetition++) { // similiar method used below as the one in diffuse. the equation is repeated 20 times to increase accuracy
+        for (int y = 1; y < gridWidth - 1; y++) { // loop through all rows
+            for (int x = 1; x < gridWidth - 1; x++) { // loop through all columns
                 pressureGrid[x + gridWidth * y] = (divergenceGrid[x + gridWidth * y] +
                                                    pressureGrid[x + 1 + gridWidth * y] + pressureGrid[x - 1 + gridWidth * y] +
-                                                   pressureGrid[x + gridWidth * (y + 1)] + pressureGrid[x + gridWidth * (y - 1)]) / 4.0f;
+                                                   pressureGrid[x + gridWidth * (y + 1)] + pressureGrid[x + gridWidth * (y - 1)]) / 4.0f; // pressure values for each cell are calculated using formula taken from jon stams paper "Real Time Fluid Dynamics for Games"
             }
         }
-        setBoundaries(0, pressureGrid);
+        setBoundaries(0, pressureGrid); // the pressure grid boundaries are set using the mirror mode as pressure can be treated the same as density when setting the boundary
     }
 
-    for (int y = 1; y < gridWidth - 1; y++) {
-        for (int x = 1; x < gridWidth - 1; x++) {
-            xvelocityGrid[x + gridWidth * y] -= 0.5f * (pressureGrid[x + 1 + gridWidth * y] - pressureGrid[x - 1 + gridWidth * y]) / cellSize;
-            yvelocityGrid[x + gridWidth * y] -= 0.5f * (pressureGrid[x + gridWidth * (y + 1)] - pressureGrid[x + gridWidth * (y - 1)]) / cellSize;
+    for (int y = 1; y < gridWidth - 1; y++) { // loop through all rows
+        for (int x = 1; x < gridWidth - 1; x++) { // loop through all columns
+            xvelocityGrid[x + gridWidth * y] -= 0.5f * (pressureGrid[x + 1 + gridWidth * y] - pressureGrid[x - 1 + gridWidth * y]) / cellSize; // corrected values assigned to the x velocity grid meaning it is now mass conserving
+            yvelocityGrid[x + gridWidth * y] -= 0.5f * (pressureGrid[x + gridWidth * (y + 1)] - pressureGrid[x + gridWidth * (y - 1)]) / cellSize; // corrected values assigned to the y velocity grid meaning it is now mass conserving
         }
     }
-    setBoundaries(1, xvelocityGrid);
-    setBoundaries(2, yvelocityGrid);
+    setBoundaries(1, xvelocityGrid); // boundaries set on x velocity grid using mode 1 as it has just been altered by project
+    setBoundaries(2, yvelocityGrid); // boundaries set on y velocity grid using mode 1 as it has just been altered by project
 }
 
 void FluidGrid::advect(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid) {
@@ -148,43 +148,52 @@ void FluidGrid::advect(int boundaryType, std::vector<float>& grid, std::vector<f
     float neighbourLeft, neighbourRight, neighbourAbove, neighbourBelow;
     float neighbourLeftWeight, neighbourRightWeight, neighbourAboveWeight, neighbourBelowWeight;
 
-    float speed = deltaTime * (gridWidth - 2);
+    float speed = deltaTime * (gridWidth - 2); // speed value is calculated that is proportional to the size of the useful grid and the time step
+                                               // essentially a scalar for the displacement that should be pulled from
 
-    float gridWidthFloat = gridWidth;
+    float gridWidthFloat = gridWidth; // grid width casted to float so more accurate positions within cells can be considered
 
-    int x, y;
-    float xFloat, yFloat;
+    int x, y; // co-ordinates of cell that is pulling density/velocity, in simpler words this is the cell that is being modified
+    float xFloat, yFloat; // co-ordinates of cell that is pulling density/velocity casted to float to allow operations involving previous co-ordinates
     
-    float xPrev, yPrev;
+    float xPrev, yPrev; // co-ordinates that density/velocity is being pulled from
 
-    float xDisplacement, yDisplacement;
+    float xDisplacement, yDisplacement; // distance between current cell and previous cell
 
-    for(x = 1, xFloat = 1; x < gridWidth - 1; x++, xFloat++) {
-        for(y = 1, yFloat = 1; y < gridWidth - 1; y++, yFloat++) {
-            xDisplacement = speed * xvelocityGrid[x + gridWidth * y];
+    for(x = 1, xFloat = 1; x < gridWidth - 1; x++, xFloat++) { // loop through all columns
+        for(y = 1, yFloat = 1; y < gridWidth - 1; y++, yFloat++) { // loop through all rows
+            xDisplacement = speed * xvelocityGrid[x + gridWidth * y]; // calculate the distance required to go back based on the magnitude of the velocity
             yDisplacement = speed * yvelocityGrid[x + gridWidth * y];
-            xPrev = xFloat - xDisplacement;
+            xPrev = xFloat - xDisplacement; // assigned values to the co-ordinates of the cell being pulled from based on the value of the displacement
             yPrev = yFloat - yDisplacement;
 
-            if (xPrev < 0.5f) xPrev = 0.5f;
-            if (yPrev < 0.5f) yPrev = 0.5f;
-            if (xPrev > gridWidthFloat - 1.5f) xPrev = gridWidthFloat - 1.5f;
-            if (yPrev > gridWidthFloat - 1.5f) yPrev = gridWidthFloat - 1.5f;
+            // clamp values to the edge of the grid if they go out of bounds
 
-            neighbourLeft = ::floorf(xPrev);
-            neighbourRight = neighbourLeft + 1;
-            neighbourBelow = ::floorf(yPrev);
-            neighbourAbove = neighbourBelow + 1;
+            if (xPrev < 0.5f) xPrev = 0.5f; // clamp to left wall
+            if (yPrev < 0.5f) yPrev = 0.5f; // clamp to bottom wall
+            if (xPrev > gridWidthFloat - 1.5f) xPrev = gridWidthFloat - 1.5f; // clamp to the right wall
+            if (yPrev > gridWidthFloat - 1.5f) yPrev = gridWidthFloat - 1.5f; // clamp to the top wall
 
-            int intNeighbourLeft = (int)neighbourLeft;
+            neighbourLeft = ::floorf(xPrev); // truncates the float co-ordinate to give the co-ordinate of the nearest left cell
+            neighbourRight = neighbourLeft + 1; // adds one to the left neighbour to give the co-ordinate of the nearest right cell
+            neighbourBelow = ::floorf(yPrev); // truncates the float co-ordinate to give the co-ordinate of the nearest cell below
+            neighbourAbove = neighbourBelow + 1; // adds one to the neighbour below to give the co-ordinate of the nearest cell above
+
+            // casts all neighbour co-ordinates to integers
+
+            int intNeighbourLeft = (int)neighbourLeft; 
             int intNeighbourRight = (int)neighbourRight;
             int intNeighbourBelow = (int)neighbourBelow;
             int intNeighbourAbove = (int)neighbourAbove;
 
+            // creates weights based on how close the co-ordinates being pulled from are to each neighbour
+            
             neighbourRightWeight = xPrev - neighbourLeft;
             neighbourLeftWeight = 1.0f - neighbourRightWeight;
             neighbourAboveWeight = yPrev - neighbourBelow;
             neighbourBelowWeight = 1.0f - neighbourAboveWeight;
+
+            // amount of density/velocity that needs to be pulled is calculated based on the amount in each neighbour and the weights of each neighbour
 
             grid[x + gridWidth * y] = 
                 neighbourLeftWeight  * (neighbourBelowWeight * tempGrid[intNeighbourLeft + gridWidth * intNeighbourBelow] + 
@@ -194,5 +203,5 @@ void FluidGrid::advect(int boundaryType, std::vector<float>& grid, std::vector<f
         }
     }
 
-    setBoundaries(boundaryType, grid);
+    setBoundaries(boundaryType, grid); // boundaries set for grid using the boundaryType parameter set when calling the advect function
 }
