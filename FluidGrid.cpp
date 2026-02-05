@@ -1,68 +1,74 @@
 #include "FluidGrid.h"
 #include "math.h"
+#include "settings.h"
 
-FluidGrid::FluidGrid(int gridSize)
-    : densityGrid(gridSize * gridSize),
-      tempDensityGrid(gridSize * gridSize),
-      xvelocityGrid(gridSize * gridSize),
-      yvelocityGrid(gridSize * gridSize),
-      divergenceGrid(gridSize * gridSize), 
-      pressureGrid(gridSize * gridSize)
+FluidGrid::FluidGrid()   // Fluid grid constructor, uses the gridWidth value stored in settings header file to construct all grids
+    : densityGrid(gridWidth * gridWidth),
+      tempDensityGrid(gridWidth * gridWidth),
+      xvelocityGrid(gridWidth * gridWidth),
+      yvelocityGrid(gridWidth * gridWidth),
+      divergenceGrid(gridWidth * gridWidth), 
+      pressureGrid(gridWidth * gridWidth)
     {
 
     };
 
-float FluidGrid::getValue(std::vector<float>& grid, int x, int y) {
+float FluidGrid::getValue(std::vector<float>& grid, int x, int y) { // getter method that can be used on any grid
     return grid[x + gridWidth * y];
 };
 
-void FluidGrid::setValue(std::vector<float>& grid, int x, int y, float newValue) {
+void FluidGrid::setValue(std::vector<float>& grid, int x, int y, float newValue) { // setter method that can be used on any grid
     grid[x + gridWidth * y] = newValue;
 };
 
-void FluidGrid::diffuse(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid) {
-    float spreadingFactor = deltaTime * diffRate * (gridWidth - 2) * (gridWidth - 2);
+void FluidGrid::diffuse(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid) { // 
+    float spreadingFactor = deltaTime * diffRate * (gridWidth - 2) * (gridWidth - 2); // the amount the fluid spreads due to the diffusion
+                                                                                      // this is proportional to the useful grid size, the time step and an arbitrary adjustable constant set in settings
 
-    for (int pass = 0; pass < 20; pass++) {
-        for (int y = 1; y < gridWidth - 1; y++) {
-            for (int x = 1; x < gridWidth - 1; x++) {
+    for (int pass = 0; pass < 20; pass++) { // the method for solving the equation for the diffusion is only an estimate and therefore is looped to increase accuracy
+        for (int y = 1; y < gridWidth - 1; y++) { // loop through all rows
+            for (int x = 1; x < gridWidth - 1; x++) { // loop through all columns
                 grid[x + gridWidth * y] = (tempGrid[x + gridWidth * y] + 
                     spreadingFactor * (
                         grid[x - 1 + gridWidth * y] + 
                         grid[x + 1 + gridWidth * y] +
                         grid[x + gridWidth * (y - 1)] + 
                         grid[x + gridWidth * (y + 1)]))
-                    / (1 + 4 * spreadingFactor);
+                    / (1 + 4 * spreadingFactor); // equation for solving density taken from jon stams paper
             }
         }
-        setBoundaries(boundaryType, grid); 
+        setBoundaries(boundaryType, grid); // set boundries fucntion called using the parameter passed in diffuse
+                                           // this parameter is required as both the density and velocity grids are diffused
     }
 }
 
 void FluidGrid::step() {
-    tempxVelocityGrid = xvelocityGrid;
+    tempxVelocityGrid = xvelocityGrid; // the temporary velocity grids are set to be referenced within the diffuse function
     tempyVelocityGrid = yvelocityGrid;
-    diffuse(1, xvelocityGrid, tempxVelocityGrid);
+    diffuse(1, xvelocityGrid, tempxVelocityGrid); // both velocity grids are diffused to "spread" the velocity
     diffuse(2, yvelocityGrid, tempyVelocityGrid);
-    project(xvelocityGrid, yvelocityGrid, divergenceGrid, pressureGrid);
+    project(xvelocityGrid, yvelocityGrid, divergenceGrid, pressureGrid); // the velocity grids are projected to conserve mass, this is done after acting on the velocity grids in any way
 
-    tempxVelocityGrid = xvelocityGrid;
+    tempxVelocityGrid = xvelocityGrid; // the temporary velocity grids are set to be referenced within the advect function
     tempyVelocityGrid = yvelocityGrid;
-    advect(1, xvelocityGrid, tempxVelocityGrid);
+    advect(1, xvelocityGrid, tempxVelocityGrid); // both velocity grid are advected causing the velocity to "pull" the velocity
     advect(2, yvelocityGrid, tempyVelocityGrid);
-    project(xvelocityGrid, yvelocityGrid, divergenceGrid, pressureGrid);
+    project(xvelocityGrid, yvelocityGrid, divergenceGrid, pressureGrid); // both velocity grids are projected again to conserve mass
 
-    tempDensityGrid = densityGrid;
-    diffuse(0, densityGrid, tempDensityGrid);
+    tempDensityGrid = densityGrid; // the temporary velocity grids are set to be referenced within the diffuse function
+    diffuse(0, densityGrid, tempDensityGrid); // the density grid is diffused, essentially spreading the fluid
 
-    tempDensityGrid = densityGrid; 
-    advect(0, densityGrid, tempDensityGrid);
+    tempDensityGrid = densityGrid; // the temporary velocity grids are set to be referenced within the diffuse function
+    advect(0, densityGrid, tempDensityGrid); // the density grid is advected causing the velocity to "pull" the density
 }
 
 void FluidGrid::setup() {
 };
 
-void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) {
+void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) { // this essentially creates a "wall" around the grid so fluid can't escape
+                                                                            // the boundaryType parameter has three settings : 0 - Mirroring density at walls
+                                                                            //                                                 1 - Reflecting x velocity at left and right walls
+                                                                            //                                                 2 - Reflecting y velocity at top and bottom walls
     for (int i = 1; i < gridWidth - 1; i++) {
         if (boundaryType == 1) {
             grid[0 + gridWidth * i] = -grid[1 + gridWidth * i];
