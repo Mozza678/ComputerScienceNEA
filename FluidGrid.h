@@ -9,17 +9,19 @@ private:
     std::vector<float> tempyVelocityGrid; // temporary grid for current y velocity values to be stored when perfroming the advect, diffuse or project methods on the y velocity grid
     std::vector<float> divergenceGrid; // grid that stores the divergence in each cell
     std::vector<float> pressureGrid; // grid that stores the pressure in each cell
+    std::vector<float> densityGrid; // grid that stores the density in each cell
+    std::vector<float> xvelocityGrid; // grid that stores the x velocity in each cell
+    std::vector<float> yvelocityGrid; // grid that stores the y velocity in each cell
+
     void diffuse(int boundaryType, std::vector<float>& x, std::vector<float>& x0); // method that "spreads" the fluid out
     void setBoundaries(int boundaryType, std::vector<float>& x); // method that locks off the walls to block density from escaping and reflect velocity
     void advect(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid); // method that moves density or velocity based on the velocity in the grid
     void project(std::vector<float>& xvelocityGrid, std::vector<float>& yvelocityGrid, std::vector<float>& divergenceGrid, std::vector<float>& pressureGrid); // method that makes the simulation mass-conserving by "cleaning up" after the advect method
 public:
     FluidGrid(); // constructor for the fluid grid
-    std::vector<float> densityGrid; // grid that stores the density in each cell
-    std::vector<float> xvelocityGrid; // grid that stores the x velocity in each cell
-    std::vector<float> yvelocityGrid; // grid that stores the y velocity in each cell
-    float getValue(std::vector<float>& grid, int x, int y); // getter method that can be used on any grid
-    void setValue(std::vector<float>& grid, int x, int y, float newValue); // setter method that can be used on any grid
+
+    float getValue(int grid, int x, int y); // getter method that can be used on any grid (0 - density grid, 1 - x velocity grid, 2 - y velocity grid)
+    void setValue(int grid, int x, int y, float newValue); // setter method that can be used on any grid (0 - density grid, 1 - x velocity grid, 2 - y velocity grid)
     void setup(); // funtion called at the start of a simulation to prepare the fluid grid ***** useless as of now
     void step(); // function that calls diffuse, project and advect in the correct order every time step
 };

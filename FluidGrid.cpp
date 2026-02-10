@@ -13,12 +13,24 @@ FluidGrid::FluidGrid()   // Fluid grid constructor, uses the gridWidth value sto
 
     };
 
-float FluidGrid::getValue(std::vector<float>& grid, int x, int y) { // getter method that can be used on any grid
-    return grid[x + gridWidth * y];
+float FluidGrid::getValue(int grid, int x, int y) { // getter method that can be used on any grid
+    if (grid == 0) {
+        return densityGrid[x + y * gridWidth];
+    } else if (grid == 1) {
+        return xvelocityGrid[x + y * gridWidth];
+    } else if (grid == 2) {
+        return yvelocityGrid[x + y * gridWidth];
+    }
 };
 
-void FluidGrid::setValue(std::vector<float>& grid, int x, int y, float newValue) { // setter method that can be used on any grid
-    grid[x + gridWidth * y] = newValue;
+void FluidGrid::setValue(int grid, int x, int y, float newValue) { // setter method that can be used on any grid
+    if (grid == 0) {
+        densityGrid[x + y * gridWidth] = newValue;
+    } else if (grid == 1) {
+        xvelocityGrid[x + y * gridWidth] = newValue;
+    } else if (grid == 2) {
+        yvelocityGrid[x + y * gridWidth] = newValue;
+    }
 };
 
 void FluidGrid::diffuse(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid) { // 
