@@ -21,6 +21,7 @@ float FluidGrid::getValue(int grid, int x, int y) { // getter method that can be
     } else if (grid == 2) {
         return yvelocityGrid[x + y * gridWidth];
     }
+    return 0.0f;
 };
 
 void FluidGrid::setValue(int grid, int x, int y, float newValue) { // setter method that can be used on any grid
