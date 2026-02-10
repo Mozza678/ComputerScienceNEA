@@ -5,18 +5,18 @@
 
 class button {
 private:
-    sf::Texture textureActive;
-    sf::Texture textureInactive;
-    float xPos;
-    float yPos;
-    int xSize;
-    int ySize;
-    std::unique_ptr<sf::Sprite> buttonSprite;
+    sf::Texture textureActive; // stores the texture to be shown when the button is in its "off" state
+    sf::Texture textureInactive; // stores the texture to be shown when the button is in its "on" state
+    float xPos; // stores the x co-ordinate of the origin of the button ( top left corner )
+    float yPos; // stores the y co-ordinate of the origin of the button ( top left corner )
+    int xSize; // stores the size along the x axis of the button, measured in pixels
+    int ySize; // stores the size along the y axis of the button, measured in pixels
+    std::unique_ptr<sf::Sprite> buttonSprite; // creates a pointer to a sprite object, this is done as the sprite object in sfml doesn't have a default constructor ( ***** REMOVE THE TYPE FROM HEADER FILE)
 public:
-    sf::Clock elapsedTime;
-    button(float xPos, float yPos, int xSize, int ySize);
-    void render(sf::RenderWindow& window);
-    bool checkIfHoveringOver(int mousePosX, int mousePosY);
-    bool isPressed;
-    bool stateChanged;
+    sf::Clock elapsedTime; // stores the time passed since the last time the button was pressed
+    button(float xPos, float yPos, int xSize, int ySize); // constructor for button
+    void render(sf::RenderWindow& window); // draws the button to the screen and changes the sprite/texture used to draw it depending on its state
+    bool checkIfHoveringOver(int mousePosX, int mousePosY); // checks if the mouse is within the bounds of the button, returns true if it is
+    bool isPressed; // stores the state of the button ( whether it is active or inactive, "on" or "off" )
+    bool stateChanged; // true if the button has been pressed, set back to false after the relevant actions have been taken
 };
