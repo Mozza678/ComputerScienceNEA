@@ -67,6 +67,9 @@ void Simulation::assignObstacleToPixelBuffer(bool obstacle, int x, int y) {
         }
         pixelColourValues.push_back(255);
     }
+    for (int i = 0; i < pixelColourValues.size(); i++) {
+        pixelBuffer[(4 * (x + gridWidth * y)) + i] = pixelColourValues[i]; // add the pixel colour values found from the function above to the correct box located through cartesian co-ordinates
+    };
 }
 
 void Simulation::updateGridTexture() {
@@ -103,7 +106,7 @@ void Simulation::updatePixelBuffer() {
     for (int y = 0; y < gridWidth; ++y) {   // loop through all y co-ordinates
         for (int x = 0; x < gridWidth; ++x) {   // loop through all x co-ordinates
             float density = fluidGrid.getValue(0, x, y); // retrieve density value from fluid grid at that specific co-ordinate
-            float obstacle = fluidGrid.getValue(3, x, y);
+            bool obstacle = fluidGrid.getObstacleGridValue(x, y);
             if (showVelocityButton.isPressed) { // if the showVelocity button is pressed the pixel buffer uses both density and velocity values
                 float velocityX = fluidGrid.getValue(1, x, y);
                 float velocityY = fluidGrid.getValue(2, x, y);
@@ -129,31 +132,30 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
     int gridY = mousePos.y / scale; // use the scale to convert the mouse pixel co-ordinate to a cell y co-ordinate within the fluid grid
 
     if (gridX > 0 && gridX < gridWidth - 1 && gridY > 0 && gridY < gridWidth - 1) { // checks if the mouse is within the bounds of the fluid grid
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) { // checks if the left mouse button is pressed
-
-            if(!drawObstacleButton.isPressed) {
-                if (addDensityButton.isPressed) {
-                    for (int xSize = -brushSize; xSize <= brushSize; xSize++) { // loops through the neighbours from the left to the right allowing multiple cells to be painted with each click, this creates more of a paint brush feel
-                        for (int ySize = -brushSize; ySize <= brushSize; ySize++) { // loops through the neighbours from the bottom to the top
-                            float currentDensity = fluidGrid.getValue(0, gridX + xSize, gridY + ySize); // assigns the current density of each cell within the brushes limits to a temporary variable
-                            if (currentDensity + fluidAddedOnClick <= 1.0f) { // ensures that a density value greater than 1.0f isn't added
-                                fluidGrid.setValue(0, gridX + xSize, gridY + ySize, (currentDensity + fluidAddedOnClick)); // adds the density value in settings to the current grid cell
-                            } else {
-                                fluidGrid.setValue(0, gridX + xSize, gridY + ySize, (1.0f)); // adds the maximum density value (1.0f) if the density wouldve exceeded this value
-                            };                    
-                        }
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !drawObstacleButton.isPressed) { // checks if the left mouse button is pressed
+            if (addDensityButton.isPressed) {
+                for (int xSize = -brushSize; xSize <= brushSize; xSize++) { // loops through the neighbours from the left to the right allowing multiple cells to be painted with each click, this creates more of a paint brush feel
+                    for (int ySize = -brushSize; ySize <= brushSize; ySize++) { // loops through the neighbours from the bottom to the top
+                        float currentDensity = fluidGrid.getValue(0, gridX + xSize, gridY + ySize); // assigns the current density of each cell within the brushes limits to a temporary variable
+                        if (currentDensity + fluidAddedOnClick <= 1.0f) { // ensures that a density value greater than 1.0f isn't added
+                            fluidGrid.setValue(0, gridX + xSize, gridY + ySize, (currentDensity + fluidAddedOnClick)); // adds the density value in settings to the current grid cell
+                        } else {
+                            fluidGrid.setValue(0, gridX + xSize, gridY + ySize, (1.0f)); // adds the maximum density value (1.0f) if the density wouldve exceeded this value
+                        };                    
                     }
-                };
+                }
+            };
 
-                float currentVX = fluidGrid.getValue(1, gridX, gridY); // assigns the current x velocity to a temporary variable
-                float currentVY = fluidGrid.getValue(2, gridX, gridY); // assigns the current y velocity to a temporary variable
+            float currentVX = fluidGrid.getValue(1, gridX, gridY); // assigns the current x velocity to a temporary variable
+            float currentVY = fluidGrid.getValue(2, gridX, gridY); // assigns the current y velocity to a temporary variable
                 
-                fluidGrid.setValue(1, gridX, gridY, currentVX + (static_cast<float>(deltaX) * velocityAddedOnClick)); // adds x velocity at the current cell depending on the speed of the mouse ( calculated based on the distance moved since last frame)
-                fluidGrid.setValue(2, gridX, gridY, currentVY + (static_cast<float>(deltaY) * velocityAddedOnClick)); // adds y velocity at the current cell depending on the speed of the mouse ( calculated based on the distance moved since last frame)
-            } else {
-                fluidGrid.setObstacleGridValue(gridX, gridY, true);
-            }
-        }
+            fluidGrid.setValue(1, gridX, gridY, currentVX + (static_cast<float>(deltaX) * velocityAddedOnClick)); // adds x velocity at the current cell depending on the speed of the mouse ( calculated based on the distance moved since last frame)
+            fluidGrid.setValue(2, gridX, gridY, currentVY + (static_cast<float>(deltaY) * velocityAddedOnClick)); // adds y velocity at the current cell depending on the speed of the mouse ( calculated based on the distance moved since last frame)
+        } else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && drawObstacleButton.isPressed) {
+            fluidGrid.setObstacleGridValue(gridX, gridY, true);
+        } else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && drawObstacleButton.isPressed) {
+            fluidGrid.setObstacleGridValue(gridX, gridY, false);
+        };
 
     } else if (gridX > 0 && gridX < gridWidth - 1 && gridY > gridWidth - 1 && gridY < gridWidth + buttonPanelSize) { // checks to see if the mouse is within the bounds of the button section
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) { // checks to see if the left mouse button is clicked
