@@ -8,9 +8,14 @@ FluidGrid::FluidGrid()   // Fluid grid constructor, uses the gridWidth value sto
       xvelocityGrid(gridWidth * gridWidth),
       yvelocityGrid(gridWidth * gridWidth),
       divergenceGrid(gridWidth * gridWidth), 
-      pressureGrid(gridWidth * gridWidth)
+      pressureGrid(gridWidth * gridWidth),
+      obstacleGrid(gridWidth * gridWidth),
+      xemmiterGrid(gridWidth * gridWidth),
+      yemmiterGrid(gridWidth * gridWidth)
     {
-
+        std::fill(obstacleGrid.begin(), obstacleGrid.end(), false);
+        std::fill(xemmiterGrid.begin(), xemmiterGrid.end(), 0.0f);
+        std::fill(yemmiterGrid.begin(), yemmiterGrid.end(), 0.0f);
     };
 
 float FluidGrid::getValue(int grid, int x, int y) { // getter method that can be used on any grid
@@ -33,6 +38,14 @@ void FluidGrid::setValue(int grid, int x, int y, float newValue) { // setter met
         yvelocityGrid[x + y * gridWidth] = newValue;
     }
 };
+
+bool FluidGrid::getObstacleGridValue(int x, int y) {
+    return obstacleGrid[x + y * gridWidth];
+}
+
+void FluidGrid::setObstacleGridValue(int x, int y, bool newValue) {
+    obstacleGrid[x + y * gridWidth] = newValue;
+}
 
 void FluidGrid::diffuse(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid) { // 
     float spreadingFactor = deltaTime * diffRate * (gridWidth - 2) * (gridWidth - 2); // the amount the fluid spreads due to the diffusion
