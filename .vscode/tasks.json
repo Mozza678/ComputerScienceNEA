@@ -13,7 +13,7 @@
                 "${fileDirname}\\main.cpp",
                 "${fileDirname}\\Simulation.cpp",
                 "${fileDirname}\\FluidGrid.cpp",
-                "${fileDirname}\\button.cpp",
+                "${fileDirname}\\ToggleButton.cpp",
                 
                 // 2. LIBRARY PATH
                 "-LC:\\SFML-3.0.2\\lib",

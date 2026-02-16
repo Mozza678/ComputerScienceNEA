@@ -1,8 +1,8 @@
-#include "button.h"
+#include "ToggleButton.h"
 #include <memory>
 #include <iostream>
 
-button::button(float xPos, float yPos, int xSize, int ySize)
+toggleButton::toggleButton(float xPos, float yPos, int xSize, int ySize, std::filesystem::__cxx11::path activeTexture, std::filesystem::__cxx11::path inactiveTexture)
     {
 
     // all default and specified values are assigned to each of the attributes
@@ -15,7 +15,7 @@ button::button(float xPos, float yPos, int xSize, int ySize)
     this->stateChanged = false;
     this->elapsedTime.restart();
 
-    if (this->textureActive.loadFromFile("ShowVelocityGreen.png") && this->textureInactive.loadFromFile("ShowVelocityRed.png")) { // attempts to load the texture and returns true or false depending on if they loaded succesfully
+    if (this->textureActive.loadFromFile(activeTexture) && this->textureInactive.loadFromFile(inactiveTexture)) { // attempts to load the texture and returns true or false depending on if they loaded succesfully
         std::cout << "textures loaded"; // prints success message if the textures load
     } else {
         std::cout << "textures failed to load"; // prints error message if the textures fail to load
@@ -25,7 +25,7 @@ button::button(float xPos, float yPos, int xSize, int ySize)
     (*buttonSprite).setPosition({xPos, yPos}); // sets the position of the sprite
     };
 
-void button::render(sf::RenderWindow& window) { // draws the button to the screen and changes the sprite if necessary, ran every frame
+void toggleButton::render(sf::RenderWindow& window) { // draws the button to the screen and changes the sprite if necessary, ran every frame
     if (stateChanged) { // checks if the button has been clicked since the last frame
         if (isPressed) { // checks if the button is currently active
             (*buttonSprite).setTexture(textureActive); // sets the button sprite to the active texture if the condition above is true
@@ -38,11 +38,11 @@ void button::render(sf::RenderWindow& window) { // draws the button to the scree
     window.draw((*buttonSprite)); // draws the button sprite to the screen
 };
 
-float button::getElapsedTime() {
+float toggleButton::getElapsedTime() {
     return elapsedTime.getElapsedTime().asSeconds();
 }
 
-bool button::checkIfHoveringOver(int mousePosX, int mousePosY) { // takes the mouse position as parameters to be compared to button bounds, the pixel position is used to create more precise bounds for clicking the button
+bool toggleButton::checkIfHoveringOver(int mousePosX, int mousePosY) { // takes the mouse position as parameters to be compared to button bounds, the pixel position is used to create more precise bounds for clicking the button
     if (mousePosX > xPos && mousePosY > yPos && mousePosX < xPos + xSize && mousePosY < yPos + ySize) { // checks if the mouse is within the edges of the button
         return true;
     } else {

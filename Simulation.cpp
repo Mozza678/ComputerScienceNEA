@@ -1,7 +1,7 @@
 #include "Simulation.h"
 #include "FluidGrid.h"
 #include "settings.h"
-#include "button.h"
+#include "ToggleButton.h"
 #include <vector>
 #include <algorithm>
 #include <memory>
@@ -11,7 +11,8 @@ Simulation::Simulation() // simulation constructor
     : pixelBuffer(4 * gridWidth * gridWidth), // initialize the pixel buffer
       gridTexture({static_cast<unsigned int>(gridWidth), static_cast<unsigned int>(gridWidth)}), // initialize the grid texture with size gridWidth x gridWidth 
       fluidGrid(), // instantiate a fluid grid with size gridWidth x gridWidth
-      showVelocityButton(static_cast<float>(1 * scale), static_cast<float>(1 * scale + scale * gridWidth), 200, 80) // construct the showVelocityButton with the correct position and size
+      showVelocityButton(static_cast<float>(1 * scale), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "ShowVelocityGreen.png", "ShowVelocityRed.png") // construct the showVelocityButton with the correct position, size, and textures
+      addDensityButton(static_cast<float>((2 * scale) + 200), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "AddDensityGreen.png", "AddDensityRed.png") // construct the addDensityButton with the correct position, size, and textures
     {
         std::fill(pixelBuffer.begin(), pixelBuffer.end(), 255); // fill the pixel buffer with 255
         gridTextureSpritePtr = std::make_unique<sf::Sprite>(gridTexture); // create pointer to the grid texture sprite

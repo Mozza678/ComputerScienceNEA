@@ -5,14 +5,13 @@
             "name": "C/C++: Launch main.exe (Fluid Sim Debug)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}\\main.exe", // 1. Path to your executable
+            "program": "${fileDirname}\\main.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
-            "externalConsole": true, // Recommended for SFML window to avoid terminal overlap
+            "externalConsole": true,
             "MIMode": "gdb",
-            // 2. You may need to change this path to your specific gdb.exe location!
             "miDebuggerPath": "C:\\mingw64\\bin\\gdb.exe", 
             "setupCommands": [
                 {
@@ -21,7 +20,6 @@
                     "ignoreFailures": true
                 }
             ],
-            // 3. This MUST match the 'label' of your build task in tasks.json
             "preLaunchTask": "C/C++: g++.exe build active file" 
         }
     ]

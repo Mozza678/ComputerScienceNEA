@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include "settings.h"
 #include "FluidGrid.h"
-#include "button.h"
+#include "ToggleButton.h"
 #include <memory>
 
 class Simulation {
@@ -16,7 +16,8 @@ private:
     sf::Texture gridTexture; // texture created that can convert the pixel buffer data into an actual visible grid
     std::unique_ptr<sf::Sprite> gridTextureSpritePtr; // pointer to the grid sprite as the sprite within sfml has no default constructor
     FluidGrid fluidGrid; // fluid grid that runs the backend ( mathematical operations ect. ) of the fluid simulation
-    button showVelocityButton; // button that alters the rendering process to show the velocity through colours
+    toggleButton showVelocityButton; // button that alters the rendering process to show the velocity through colours
+    toggleButton addDensityButton; // button that controls whether density should be added on click
 
     void assignDensityToPixelBuffer(float density, int x, int y); // method that takes a density value and assigns it corresponding R, G, B, and A values to a return a tone of grey
     void assignVelocityAndDensityToPixelBuffer(float density, float velocityX, float velocityY, int x, int y); // method that takes density and velocity values and assigns it corresponding R, G, B, and A values

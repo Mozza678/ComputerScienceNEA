@@ -3,7 +3,7 @@
 #include <SFML/System.hpp>
 #include <memory>
 
-class button {
+class toggleButton {
 private:
     sf::Texture textureActive; // stores the texture to be shown when the button is in its "off" state
     sf::Texture textureInactive; // stores the texture to be shown when the button is in its "on" state
@@ -15,7 +15,7 @@ private:
     int ySize; // stores the size along the y axis of the button, measured in pixels
     sf::Clock elapsedTime; // stores the time passed since the last time the button was pressed
 public:
-    button(float xPos, float yPos, int xSize, int ySize); // constructor for button
+    toggleButton(float xPos, float yPos, int xSize, int ySize, std::filesystem::__cxx11::path activeTexture, std::filesystem::__cxx11::path inactiveTexture); // constructor for button
 
     float getElapsedTime(); // returns the elapsed time since the button was last pressed
     void render(sf::RenderWindow& window); // draws the button to the screen and changes the sprite/texture used to draw it depending on its state
