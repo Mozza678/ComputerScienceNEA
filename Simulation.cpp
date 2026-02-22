@@ -124,6 +124,7 @@ void Simulation::updatePixelBuffer() {
         }
     }
 }
+
 void Simulation::checkForMouseInput(sf::RenderWindow& window) { 
     sf::Vector2i mousePos = sf::Mouse::getPosition(window); // creates a two element vector containing the x and y position of the mouse in the current frame
     
