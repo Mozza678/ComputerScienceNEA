@@ -129,6 +129,70 @@ void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) { // t
     grid[gridWidth * (gridWidth - 1)] = 0.5f * (grid[1 + gridWidth * (gridWidth - 1)] + grid[gridWidth * (gridWidth - 2)]); // bottom left corner
     grid[(gridWidth - 1)] = 0.5f * (grid[(gridWidth - 2) + gridWidth * 0] + grid[(gridWidth - 1) + gridWidth * 1]); // top right corner
     grid[(gridWidth - 1) + gridWidth * (gridWidth - 1)] = 0.5f * (grid[(gridWidth - 2) + gridWidth * (gridWidth - 1)] + grid[(gridWidth - 1) + gridWidth * (gridWidth - 2)]); // bottom right corner
+
+    // The following code sets teh boundary values for the cells adjacent to the obstacle blocks placed by the user.
+
+
+    if (boundaryType == 1) {
+        for (int x = 1; x < gridWidth - 1; x++) {
+            for (int y = 1; y < gridWidth - 1; y++) {
+                if (obstacleGrid[x + y * gridWidth]) {
+                    if (!obstacleGrid[x - 1 + y * gridWidth]) {
+                        grid[x + y * gridWidth] = -grid[x - 1 + y * gridWidth];
+                    } else if (!obstacleGrid[x + 1 + y *gridWidth]) {
+                        grid[x + y * gridWidth] = -grid[x + 1 + y * gridWidth];
+                    }
+                }
+            }
+        } 
+    } else if (boundaryType == 2) {
+        for (int x = 1; x < gridWidth - 1; x++) {
+            for (int y = 1; y < gridWidth - 1; y++) {
+                if (obstacleGrid[x + y * gridWidth]) {
+                    if (!obstacleGrid[x + (y - 1) * gridWidth]) {
+                        grid[x + y * gridWidth] = -grid[x + (y - 1) * gridWidth];
+                    } else if (!obstacleGrid[x + (y + 1) *gridWidth]) {
+                        grid[x + y * gridWidth] = -grid[x + (y + 1) * gridWidth];
+                    }
+                }
+            }
+        }
+    } else if (boundaryType == 0) {
+        for (int x = 1; x < gridWidth - 1; x++) {
+            for (int y = 1; y < gridWidth - 1; y++) {
+                if (obstacleGrid[x + y * gridWidth]) {
+                    if (!obstacleGrid[x - 1 + y * gridWidth]) {
+                        if (obstacleGrid[x + (y - 1) * gridWidth] && obstacleGrid[x + (y + 1) * gridWidth]){
+                            grid[x + y * gridWidth] = grid[x - 1 + y * gridWidth];
+                        } else if(obstacleGrid[x + (y - 1) * gridWidth]) {
+                            grid[x + y * gridWidth] = 0.5f * (grid[x - 1 + y * gridWidth] + grid[x + (y + 1) * gridWidth]);
+                        } else if(obstacleGrid[x + (y + 1) * gridWidth]) {
+                            grid[x + y * gridWidth] = 0.5f * (grid[x - 1 + y * gridWidth] + grid[x + (y - 1) * gridWidth]);
+                        } 
+                    } else if (!obstacleGrid[x + 1 + y * gridWidth]) {
+                        if (obstacleGrid[x + (y - 1) * gridWidth] && obstacleGrid[x + (y + 1) * gridWidth]){
+                            grid[x + y * gridWidth] = grid[x + 1 + y * gridWidth];
+                        } else if(obstacleGrid[x + (y - 1) * gridWidth]) {
+                            grid[x + y * gridWidth] = 0.5f * (grid[x + 1 + y * gridWidth] + grid[x + (y + 1) * gridWidth]);
+                        } else if(obstacleGrid[x + (y + 1) * gridWidth]) {
+                            grid[x + y * gridWidth] = 0.5f * (grid[x + 1 + y * gridWidth] + grid[x + (y - 1) * gridWidth]);
+                        } 
+                    } else if (!obstacleGrid[x + (y - 1) * gridWidth] && obstacleGrid[x + 1 + y * gridWidth] && obstacleGrid[x - 1 + y * gridWidth]) {
+                        grid[x + y * gridWidth] = grid[x + (y - 1) * gridWidth];
+                    } else if (!obstacleGrid[x + (y + 1) * gridWidth] && obstacleGrid[x + 1 + y * gridWidth] && obstacleGrid[x - 1 + y * gridWidth]) {
+                        grid[x + y * gridWidth] = grid[x + (y + 1) * gridWidth];
+                    }
+                }
+            }
+        }
+    }
+    for(int x = 1; x < gridWidth - 1; x++) {
+        for (int y = 1; y < gridWidth - 1; y++) {
+            if (obstacleGrid[x + y * gridWidth] && obstacleGrid[x + 1 + y * gridWidth] && obstacleGrid[x - 1 + y * gridWidth] && obstacleGrid[x + (y + 1) * gridWidth] && obstacleGrid[x + (y - 1) * gridWidth]) {
+                grid[x + y * gridWidth] = 0.0f;
+            }
+        }
+    }
 }
 
 void FluidGrid::project(std::vector<float>& xvelocityGrid, std::vector<float>& yvelocityGrid, std::vector<float>& divergenceGrid, std::vector<float>& pressureGrid) {
@@ -151,6 +215,7 @@ void FluidGrid::project(std::vector<float>& xvelocityGrid, std::vector<float>& y
     for (int repetition = 0; repetition < 20; repetition++) { // similiar method used below as the one in diffuse. the equation is repeated 20 times to increase accuracy
         for (int y = 1; y < gridWidth - 1; y++) { // loop through all rows
             for (int x = 1; x < gridWidth - 1; x++) { // loop through all columns
+                if (obstacleGrid[x + gridWidth * y]) continue;
                 pressureGrid[x + gridWidth * y] = (divergenceGrid[x + gridWidth * y] +
                                                    pressureGrid[x + 1 + gridWidth * y] + pressureGrid[x - 1 + gridWidth * y] +
                                                    pressureGrid[x + gridWidth * (y + 1)] + pressureGrid[x + gridWidth * (y - 1)]) / 4.0f; // pressure values for each cell are calculated using formula taken from jon stams paper "Real Time Fluid Dynamics for Games"

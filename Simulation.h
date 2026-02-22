@@ -19,6 +19,7 @@ private:
     toggleButton showVelocityButton; // button that alters the rendering process to show the velocity through colours
     toggleButton addDensityButton; // button that controls whether density should be added on click
     toggleButton drawObstacleButton; // button that enables the user to draw obstacles into the fluid simulation
+    std::vector<std::uint8_t> pixelColourValues; // initialize temporary vector to store R, G, B, and A values
 
     void assignDensityToPixelBuffer(float density, int x, int y); // method that takes a density value and assigns it corresponding R, G, B, and A values to a return a tone of grey
     void assignVelocityAndDensityToPixelBuffer(float density, float velocityX, float velocityY, int x, int y); // method that takes density and velocity values and assigns it corresponding R, G, B, and A values

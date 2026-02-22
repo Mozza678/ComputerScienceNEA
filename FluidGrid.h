@@ -1,6 +1,8 @@
 #pragma once
 #include "settings.h"
 #include <vector>
+#include <algorithm>
+#include <cstdint>
 
 class FluidGrid {
 private:

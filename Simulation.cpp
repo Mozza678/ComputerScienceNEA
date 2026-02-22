@@ -21,19 +21,15 @@ Simulation::Simulation() // simulation constructor
     }
 
 void Simulation::assignDensityToPixelBuffer(float density, int x, int y){
-    std::vector<std::uint8_t> pixelColourValues; // create single dimension vector of pixel colour values in the format RGBA
+
     int integerDensity = static_cast<int>(std::clamp(density, 0.0f, 1.0f) * 250); // convert the float density value into a value inbetween 0 and 255
     for (int i = 0; i < 3; i++) { // loop through R, G, and B
         pixelColourValues.push_back(integerDensity); // add the corresponding values to the vector to create a grey that corresponds to the density of that box
     }
     pixelColourValues.push_back(255); // set the A (opacity) value to 255 to ensure visibility
-    for (int i = 0; i < pixelColourValues.size(); i++) { // loop through the temporary RGBA vector
-        pixelBuffer[(4 * (x + gridWidth * y)) + i] = pixelColourValues[i]; // add the pixel colour values found from the function above to the correct box located through cartesian co-ordinates
-    }
 };
 
 void Simulation::assignVelocityAndDensityToPixelBuffer(float density, float velocityX, float velocityY, int x, int y) { // this is used when the show velocity is button to render colours to the screen representing the velocity and opacity that represents the density
-    std::vector<std::uint8_t> pixelColourValues; // initialize temporary vector to store R, G, B, and A values
     int integerDensity = static_cast<int>(std::clamp(density, 0.0f, 1.0f) * 250); // initialize temporary variable that contains a density value mapped to a value between 0 - 255
     int velocityMagnitude = std::clamp(static_cast<int>((pow(pow(velocityX, 2) + pow(velocityY, 2), 0.5f)) / pow(2, 0.5) * 255), 0, 63) * 4; // mathematical function that converts the x and y velocity values to a magnitude between 0 and 255
 
@@ -50,26 +46,21 @@ void Simulation::assignVelocityAndDensityToPixelBuffer(float density, float velo
         pixelColourValues.push_back((velocityMagnitude - 128) * 2);
         pixelColourValues.push_back(integerDensity);
     };
-    for (int i = 0; i < pixelColourValues.size(); i++) {
-        pixelBuffer[(4 * (x + gridWidth * y)) + i] = pixelColourValues[i]; // add the pixel colour values found from the function above to the correct box located through cartesian co-ordinates
-    };
 }
 
 void Simulation::assignObstacleToPixelBuffer(bool obstacle, int x, int y) {
-    std::vector<std::uint8_t> pixelColourValues;
     if (obstacle) {
+        // Set to White for drawing/edit modes
         for (int i = 0; i < 4; i++) {
             pixelColourValues.push_back(255);
         }
     } else {
-        for (int i = 0; i < 3; i ++) {
+        // Background color (Black/Empty)
+        for (int i = 0; i < 3; i++) {
             pixelColourValues.push_back(0);
         }
         pixelColourValues.push_back(255);
     }
-    for (int i = 0; i < pixelColourValues.size(); i++) {
-        pixelBuffer[(4 * (x + gridWidth * y)) + i] = pixelColourValues[i]; // add the pixel colour values found from the function above to the correct box located through cartesian co-ordinates
-    };
 }
 
 void Simulation::updateGridTexture() {
@@ -103,23 +94,36 @@ void Simulation::run(){
 };
 
 void Simulation::updatePixelBuffer() {
-    for (int y = 0; y < gridWidth; ++y) {   // loop through all y co-ordinates
-        for (int x = 0; x < gridWidth; ++x) {   // loop through all x co-ordinates
-            float density = fluidGrid.getValue(0, x, y); // retrieve density value from fluid grid at that specific co-ordinate
+    for (int y = 0; y < gridWidth; ++y) {
+        for (int x = 0; x < gridWidth; ++x) {
+            pixelColourValues.clear();
+            float density = fluidGrid.getValue(0, x, y);
             bool obstacle = fluidGrid.getObstacleGridValue(x, y);
-            if (showVelocityButton.isPressed) { // if the showVelocity button is pressed the pixel buffer uses both density and velocity values
+
+            if (drawObstacleButton.isPressed) {
+                // If in drawing mode, obstacles appear White
+                assignObstacleToPixelBuffer(obstacle, x, y);
+            } else if (obstacle) {
+                // In normal mode, obstacles appear Blue
+                pixelColourValues.push_back(0);   // R
+                pixelColourValues.push_back(0);   // G
+                pixelColourValues.push_back(255); // B
+                pixelColourValues.push_back(255); // A
+            } else if (showVelocityButton.isPressed) {
                 float velocityX = fluidGrid.getValue(1, x, y);
                 float velocityY = fluidGrid.getValue(2, x, y);
                 assignVelocityAndDensityToPixelBuffer(density, velocityX, velocityY, x, y);
-            } else if (drawObstacleButton.isPressed) {
-                assignObstacleToPixelBuffer(obstacle, x, y);
-            } else { // if the showVelocity button is not pressed the pixel buffer just uses the density values coverted to a greyscale
+            } else {
+                // Default: show fluid density as grayscale
                 assignDensityToPixelBuffer(density, x, y);
+            }
+
+            for (int i = 0; i < pixelColourValues.size(); i++) {
+                pixelBuffer[(4 * (x + gridWidth * y)) + i] = pixelColourValues[i];
             }
         }
     }
 }
-
 void Simulation::checkForMouseInput(sf::RenderWindow& window) { 
     sf::Vector2i mousePos = sf::Mouse::getPosition(window); // creates a two element vector containing the x and y position of the mouse in the current frame
     
@@ -130,6 +134,9 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
 
     int gridX = mousePos.x / scale; // use the scale to convert the mouse pixel co-ordinate to a cell x co-ordinate within the fluid grid
     int gridY = mousePos.y / scale; // use the scale to convert the mouse pixel co-ordinate to a cell y co-ordinate within the fluid grid
+
+    int obstacleGridX = mousePos.x / (scale * 2); // use the scale to convert the mouse pixel co-ordinate to a cell x co-ordinate within the obstacle grid
+    int obstacleGridY = mousePos.y / (scale * 2); // use the scale to convert the mouse pixel co-ordinate to a cell y co-ordinate within the obstacle grid
 
     if (gridX > 0 && gridX < gridWidth - 1 && gridY > 0 && gridY < gridWidth - 1) { // checks if the mouse is within the bounds of the fluid grid
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !drawObstacleButton.isPressed) { // checks if the left mouse button is pressed
@@ -152,9 +159,15 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
             fluidGrid.setValue(1, gridX, gridY, currentVX + (static_cast<float>(deltaX) * velocityAddedOnClick)); // adds x velocity at the current cell depending on the speed of the mouse ( calculated based on the distance moved since last frame)
             fluidGrid.setValue(2, gridX, gridY, currentVY + (static_cast<float>(deltaY) * velocityAddedOnClick)); // adds y velocity at the current cell depending on the speed of the mouse ( calculated based on the distance moved since last frame)
         } else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && drawObstacleButton.isPressed) {
-            fluidGrid.setObstacleGridValue(gridX, gridY, true);
+            fluidGrid.setObstacleGridValue(obstacleGridX * 2, obstacleGridY * 2, true);
+            fluidGrid.setObstacleGridValue(obstacleGridX * 2 + 1, obstacleGridY * 2, true);
+            fluidGrid.setObstacleGridValue(obstacleGridX * 2, obstacleGridY * 2 + 1, true);
+            fluidGrid.setObstacleGridValue(obstacleGridX * 2 + 1, obstacleGridY * 2 + 1, true);
         } else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && drawObstacleButton.isPressed) {
-            fluidGrid.setObstacleGridValue(gridX, gridY, false);
+            fluidGrid.setObstacleGridValue(obstacleGridX * 2, obstacleGridY * 2, false);
+            fluidGrid.setObstacleGridValue(obstacleGridX * 2 + 1, obstacleGridY * 2, false);
+            fluidGrid.setObstacleGridValue(obstacleGridX * 2, obstacleGridY * 2 + 1, false);
+            fluidGrid.setObstacleGridValue(obstacleGridX * 2 + 1, obstacleGridY * 2 + 1, false);
         };
 
     } else if (gridX > 0 && gridX < gridWidth - 1 && gridY > gridWidth - 1 && gridY < gridWidth + buttonPanelSize) { // checks to see if the mouse is within the bounds of the button section
