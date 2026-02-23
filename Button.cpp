@@ -2,7 +2,7 @@
 #include <memory>
 #include <iostream>
 
-button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::__cxx11::path pressedTexture, std::filesystem::__cxx11::path idleTexture)
+button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::__cxx11::path pressedPath, std::filesystem::__cxx11::path idlePath)
     {
 
     // all default and specified values are assigned to each of the attributes
@@ -13,7 +13,7 @@ button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::__
     this->ySize = ySize;
     this->elapsedTime.restart();
 
-    if (this->pressedTexture.loadFromFile(pressedTexture) && this->idleTexture.loadFromFile(idleTexture)) { // attempts to load the texture and returns true or false depending on if they loaded succesfully
+    if (this->pressedTexture.loadFromFile(pressedPath) && this->idleTexture.loadFromFile(idlePath)) { // attempts to load the texture and returns true or false depending on if they loaded succesfully
         std::cout << "textures loaded"; // prints success message if the textures load
     } else {
         std::cout << "textures failed to load"; // prints error message if the textures fail to load
@@ -25,18 +25,23 @@ button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::__
 
 void button::render(sf::RenderWindow& window) { // draws the button to the screen and changes the sprite if necessary, ran every frame
     if (isPressed) { // checks if the button has been clicked since the last frame
-        if (getElapsedTime() > 0.5f) { // checks if the button is currently active
+        if (getElapsedTime() > 1.0f) { // checks if the button is currently active
             (*buttonSprite).setTexture(idleTexture); // sets the button sprite to the active texture if the condition above is true
+            isPressed = false;
+            elapsedTime.restart(); // restarts the time since last pressed to create a half second window where the button can't be pressed again
         } else {
             (*buttonSprite).setTexture(pressedTexture); // sets the button sprite to the inactive texture if the condition above is false
         }
-        elapsedTime.restart(); // restarts the time since last pressed to create a half second window where the button can't be pressed again
     }
     window.draw((*buttonSprite)); // draws the button sprite to the screen
 };
 
 float button::getElapsedTime() {
     return elapsedTime.getElapsedTime().asSeconds();
+}
+
+void button::restartElapsedTime() {
+    elapsedTime.restart();
 }
 
 bool button::checkIfHoveringOver(int mousePosX, int mousePosY) { // takes the mouse position as parameters to be compared to button bounds, the pixel position is used to create more precise bounds for clicking the button

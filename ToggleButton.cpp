@@ -1,5 +1,7 @@
 #include "ToggleButton.h"
 #include <memory>
+#include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 #include <iostream>
 
 toggleButton::toggleButton(float xPos, float yPos, int xSize, int ySize, std::filesystem::__cxx11::path activeTexture, std::filesystem::__cxx11::path inactiveTexture)

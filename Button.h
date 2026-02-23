@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
+#include <filesystem>
 #include <memory>
 
 class button {
@@ -25,4 +26,5 @@ public:
     virtual void render(sf::RenderWindow& window); // draws the button to the screen and changes the sprite/texture used to draw it depending on its state
     bool checkIfHoveringOver(int mousePosX, int mousePosY); // checks if the mouse is within the bounds of the button, returns true if it is
     float getElapsedTime();
+    void restartElapsedTime();
 };

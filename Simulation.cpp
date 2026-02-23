@@ -197,7 +197,8 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
                     showVelocityButton.isPressed = false;
                     showVelocityButton.stateChanged = true;
                 }
-            } else if (testButton.checkIfHoveringOver(mousePos.x, mousePos.y) && testButton.getElapsedTime() > 1.0f) {
+            } else if (testButton.checkIfHoveringOver(mousePos.x, mousePos.y) && testButton.getElapsedTime() > 2.0f) {
+                testButton.restartElapsedTime();
                 testButton.isPressed = true;
             }
         }
