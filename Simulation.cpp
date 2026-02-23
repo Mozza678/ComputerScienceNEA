@@ -13,7 +13,8 @@ Simulation::Simulation() // simulation constructor
       fluidGrid(), // instantiate a fluid grid with size gridWidth x gridWidth
       showVelocityButton(static_cast<float>(1 * scale), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "ShowVelocityGreen.png", "ShowVelocityRed.png"), // construct the showVelocityButton with the correct position, size, and textures
       addDensityButton(static_cast<float>((2 * scale) + 200), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "AddDensityGreen.png", "AddDensityRed.png"), // construct the addDensityButton with the correct position, size, and textures
-      drawObstacleButton(static_cast<float>((3 * scale) + 400), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png") // construct the drawObstacle Button with the correct position, size, and textures
+      drawObstacleButton(static_cast<float>((3 * scale) + 400), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"), // construct the drawObstacle Button with the correct position, size, and textures
+      testButton(static_cast<float>((4 * scale) + 600), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png")
     {
         std::fill(pixelBuffer.begin(), pixelBuffer.end(), 255); // fill the pixel buffer with 255
         gridTextureSpritePtr = std::make_unique<sf::Sprite>(gridTexture); // create pointer to the grid texture sprite
@@ -89,6 +90,7 @@ void Simulation::run(){
         showVelocityButton.render(window);
         addDensityButton.render(window);
         drawObstacleButton.render(window);
+        testButton.render(window);
         window.display(); // display new updates
     }
 };
@@ -195,6 +197,8 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
                     showVelocityButton.isPressed = false;
                     showVelocityButton.stateChanged = true;
                 }
+            } else if (testButton.checkIfHoveringOver(mousePos.x, mousePos.y) && testButton.getElapsedTime() > 1.0f) {
+                testButton.isPressed = true;
             }
         }
     };

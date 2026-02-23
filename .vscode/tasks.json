@@ -9,24 +9,25 @@
                 "-g",
                 "-IC:\\SFML-3.0.2\\include",
                 
-                // 1. INPUT SOURCE FILES
+                // SOURCE FILES
                 "${fileDirname}\\main.cpp",
                 "${fileDirname}\\Simulation.cpp",
                 "${fileDirname}\\FluidGrid.cpp",
                 "${fileDirname}\\ToggleButton.cpp",
+                "${fileDirname}\\Button.cpp",
                 
-                // 2. LIBRARY PATH
+                // SFML PATH
                 "-LC:\\SFML-3.0.2\\lib",
                 
-                // 3. SFML DEBUG LIBRARIES (The ones you listed)
+                // SFML DEBUG LIBRARIES
                 "-lsfml-graphics-d",
                 "-lsfml-window-d",
                 "-lsfml-system-d",
                 
-                // 4. CRITICAL WINDOWS/SFML DEPENDENCIES (The missing pieces!)
+                // CRITICAL WINDOWS/SFML DEPENDENCIES
                 "-lsfml-main-d",
                 
-                // 5. OUTPUT
+                // OUTPUT
                 "-o",
                 "${fileDirname}\\main.exe"
             ],
