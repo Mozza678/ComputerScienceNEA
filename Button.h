@@ -20,7 +20,7 @@ protected:
     
 
 public:
-    button(float xPos, float yPos, int xSize, int ySize, std::filesystem::path pressedTexture, std::filesystem::path idleTexture); // constructor for the button, takes the size, positions and path for the textures as parameters
+    button(float xPos, float yPos, int xSize, int ySize, std::filesystem::path pressedTexturePath, std::filesystem::path idleTexturePath); // constructor for the button, takes the size, positions and path for the textures as parameters
     
     bool isPressed; // stores the state of the button ( whether it is active or inactive, "on" or "off" )
     bool stateChanged; // true if the button has been pressed, set back to false after the relevant actions have been taken
