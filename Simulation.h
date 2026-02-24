@@ -24,7 +24,7 @@ private:
 
     void assignDensityToPixelBuffer(float density, int x, int y); // method that takes a density value and assigns it corresponding R, G, B, and A values to a return a tone of grey
     void assignVelocityAndDensityToPixelBuffer(float density, float velocityX, float velocityY, int x, int y); // method that takes density and velocity values and assigns it corresponding R, G, B, and A values
-    void assignObstacleToPixelBuffer(bool obstacle, int x, int y);
+    void assignObstacleToPixelBuffer(bool obstacle, int x, int y); // method that assigns the obstacle positions as white and the remaining cells as black. this creates a clutter free screen making it easy to draw obstacles
     void updateGridTexture(); // method that converts the pixel buffer to the 2d grid and assigns it to a sprite
     void updatePixelBuffer(); // method that takes the density values from the fluid grid and assigns them to the pixel buffer
     void checkForMouseInput(sf::RenderWindow& window); // method that checks if there is any valid input such as clicking a button or drawing to the fluid grid
