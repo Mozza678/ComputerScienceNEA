@@ -11,14 +11,15 @@ Simulation::Simulation() // simulation constructor
     : pixelBuffer(4 * gridWidth * gridWidth), // initialize the pixel buffer
       gridTexture({static_cast<unsigned int>(gridWidth), static_cast<unsigned int>(gridWidth)}), // initialize the grid texture with size gridWidth x gridWidth 
       fluidGrid(), // instantiate a fluid grid with size gridWidth x gridWidth
+      // buttons constructed in the initializer list as button has no default constructor
       showVelocityButton(static_cast<float>(1 * scale), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "ShowVelocityGreen.png", "ShowVelocityRed.png"), // construct the showVelocityButton with the correct position, size, and textures
       addDensityButton(static_cast<float>((2 * scale) + 200), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "AddDensityGreen.png", "AddDensityRed.png"), // construct the addDensityButton with the correct position, size, and textures
       drawObstacleButton(static_cast<float>((3 * scale) + 400), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"), // construct the drawObstacle Button with the correct position, size, and textures
-      testButton(static_cast<float>((4 * scale) + 600), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png")
+      testButton(static_cast<float>((4 * scale) + 600), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"),
+      gridSprite(gridTexture) // gridSprite constructed in initializer list as grid sprite has no default constructor
     {
         std::fill(pixelBuffer.begin(), pixelBuffer.end(), 255); // fill the pixel buffer with 255
-        gridTextureSpritePtr = std::make_unique<sf::Sprite>(gridTexture); // create pointer to the grid texture sprite
-        (*gridTextureSpritePtr).setScale({static_cast<float>(scale), static_cast<float>(scale)}); // set the scale of the sprite to ensure it fills the screen
+        gridSprite.setScale({static_cast<float>(scale), static_cast<float>(scale)}); // set the scale of the sprite to ensure it fills the screen
     }
 
 void Simulation::assignDensityToPixelBuffer(float density, int x, int y){
@@ -86,7 +87,7 @@ void Simulation::run(){
         updatePixelBuffer();
         updateGridTexture();
         window.clear({255,255,255}); // wipe the previous frame
-        window.draw(*gridTextureSpritePtr); // draw the sprite to the screen
+        window.draw(gridSprite); // draw the sprite to the screen
         showVelocityButton.render(window); // draw the showVelocityButton to the screen
         addDensityButton.render(window); // draw the addDensityButton to the screen
         drawObstacleButton.render(window); // draw the drawObstacleButton to the screen

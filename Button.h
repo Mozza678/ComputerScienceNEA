@@ -9,7 +9,7 @@ protected:
     sf::Texture idleTexture; // texture of the button when not pressed.
     sf::Texture pressedTexture; // texture of the button for a small time when pressed. 
                                 // this will behave differently for toggleButton and will instead flip between the two textures depending on whether the button has been activated by the user.
-    std::unique_ptr<sf::Sprite> buttonSprite; // the texture of the button is assigned to the sprite so it can be drawn to the screen
+    sf::Sprite buttonSprite; // the texture of the button is assigned to the sprite so it can be drawn to the screen
 
     float xPos; // stores the x co-ordinate of the origin of the button ( top left corner )
     float yPos; // stores the y co-ordinate of the origin of the button ( top left corner )

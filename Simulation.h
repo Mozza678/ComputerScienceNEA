@@ -14,7 +14,7 @@ public:
 private:
     std::vector<std::uint8_t> pixelBuffer; // vector storing each R, G, B, and A value for each pixel
     sf::Texture gridTexture; // texture created that can convert the pixel buffer data into an actual visible grid
-    std::unique_ptr<sf::Sprite> gridTextureSpritePtr; // pointer to the grid sprite as the sprite within sfml has no default constructor
+    sf::Sprite gridSprite;
     FluidGrid fluidGrid; // fluid grid that runs the backend ( mathematical operations ect. ) of the fluid simulation
     toggleButton showVelocityButton; // button that alters the rendering process to show the velocity through colours
     toggleButton addDensityButton; // button that controls whether density should be added on click

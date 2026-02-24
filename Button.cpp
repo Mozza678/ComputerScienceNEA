@@ -3,6 +3,7 @@
 #include <iostream>
 
 button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::path pressedTexturePath, std::filesystem::path idleTexturePath)
+    : buttonSprite(idleTexture) // sets the initial sprite for the button to the "idle" texture to match the isPressed variable, this is done in the intializer list as sprite has no default constructor
     {
 
     // all default and specified values are assigned to each of the attributes
@@ -19,21 +20,21 @@ button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::pa
         std::cout << "textures failed to load"; // prints error message to the terminal if the textures fail to load
     };
     
-    buttonSprite = std::make_unique<sf::Sprite>(idleTexture); // sets the initial sprite for the button to the "idle" texture to match the isPressed variable, this uses a pointer as the sprite object within sfml has no default constructor
-    (*buttonSprite).setPosition({xPos, yPos}); // sets the position of the sprite
+    buttonSprite.setTexture(idleTexture); // sets the texture again as it has now been loaded from memory
+    buttonSprite.setPosition({xPos, yPos}); // sets the position of the sprite
     };
 
 void button::render(sf::RenderWindow& window) { // draws the button to the screen and changes the sprite if necessary, ran every frame
     if (isPressed) { // checks if the button is currently pressed
         if (getElapsedTime() > 1.0f) { // checks if the button has been pressed for enough time
-            (*buttonSprite).setTexture(idleTexture); // sets the button sprite to the idle texture as the button has been pressed for 1 second
+            buttonSprite.setTexture(idleTexture); // sets the button sprite to the idle texture as the button has been pressed for 1 second
             isPressed = false; // returns the button the idle state
             elapsedTime.restart(); // restarts the time since last pressed to create a time window where the button can't be pressed again
         } else {
-            (*buttonSprite).setTexture(pressedTexture); // sets the button sprite to the inactive texture if the button isn't pressed
+            buttonSprite.setTexture(pressedTexture); // sets the button sprite to the inactive texture if the button isn't pressed
         }
     }
-    window.draw((*buttonSprite)); // draws the button sprite to the screen
+    window.draw(buttonSprite); // draws the button sprite to the screen
 };
 
 float button::getElapsedTime() {

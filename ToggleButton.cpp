@@ -15,12 +15,12 @@ toggleButton::toggleButton(float xPos, float yPos, int xSize, int ySize, std::fi
 void toggleButton::render(sf::RenderWindow& window) { // overriden render function inherited from the "button" base class. performs a similiar function but alters the logic so the button remains on or off
     if (stateChanged) { // checks if the button has been clicked since the last frame
         if (isPressed) { // checks if the button is currently active
-            (*buttonSprite).setTexture(pressedTexture); // sets the button sprite to the active texture if the condition above is true
+            buttonSprite.setTexture(pressedTexture); // sets the button sprite to the active texture if the condition above is true
         } else {
-            (*buttonSprite).setTexture(idleTexture); // sets the button sprite to the inactive texture if the condition above is false
+            buttonSprite.setTexture(idleTexture); // sets the button sprite to the inactive texture if the condition above is false
         }
         stateChanged = false; // sets the stateChanged variable back to false as we've now acted on the state change
         elapsedTime.restart(); // restarts the time since last pressed to create a half second window where the button can't be pressed again
     }
-    window.draw((*buttonSprite)); // draws the button sprite to the screen
+    window.draw(buttonSprite); // draws the button sprite to the screen
 };
