@@ -15,8 +15,8 @@ Simulation::Simulation() // simulation constructor
       showVelocityButton(static_cast<float>(1 * scale), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "ShowVelocityGreen.png", "ShowVelocityRed.png"), // construct the showVelocityButton with the correct position, size, and textures
       addDensityButton(static_cast<float>((2 * scale) + 200), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "AddDensityGreen.png", "AddDensityRed.png"), // construct the addDensityButton with the correct position, size, and textures
       drawObstacleButton(static_cast<float>((3 * scale) + 400), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"), // construct the drawObstacle Button with the correct position, size, and textures
-      testButton(static_cast<float>((4 * scale) + 600), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"),
-      testButton2(static_cast<float>((5 * scale) + 800), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"),
+      saveButton(static_cast<float>((4 * scale) + 600), static_cast<float>(1 * scale + scale * gridWidth), 120, 80, "SaveGreen.png", "SaveRed.png"),
+      loadButton(static_cast<float>((5 * scale) + 720), static_cast<float>(1 * scale + scale * gridWidth), 120, 80, "LoadGreen.png", "LoadRed.png"),
       gridSprite(gridTexture) // gridSprite constructed in initializer list as grid sprite has no default constructor
     {
         std::fill(pixelBuffer.begin(), pixelBuffer.end(), 255); // fill the pixel buffer with 255
@@ -92,8 +92,8 @@ void Simulation::run(){
         showVelocityButton.render(window); // draw the showVelocityButton to the screen
         addDensityButton.render(window); // draw the addDensityButton to the screen
         drawObstacleButton.render(window); // draw the drawObstacleButton to the screen
-        testButton.render(window);
-        testButton2.render(window);
+        saveButton.render(window);
+        loadButton.render(window);
         window.display(); // display the new window after all entities have been rendered
     }
 };
@@ -204,13 +204,13 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
                     showVelocityButton.isPressed = false;
                     showVelocityButton.stateChanged = true;
                 }
-            } else if (testButton.checkIfHoveringOver(mousePos.x, mousePos.y) && testButton.getElapsedTime() > 2.0f) {
-                testButton.restartElapsedTime();
-                testButton.isPressed = true;
+            } else if (saveButton.checkIfHoveringOver(mousePos.x, mousePos.y) && saveButton.getElapsedTime() > 2.0f) {
+                saveButton.restartElapsedTime();
+                saveButton.isPressed = true;
                 saveObstaclePlacement();
-            } else if (testButton2.checkIfHoveringOver(mousePos.x, mousePos.y) && testButton2.getElapsedTime() > 2.0f){
-                testButton2.restartElapsedTime();
-                testButton2.isPressed = true;
+            } else if (loadButton.checkIfHoveringOver(mousePos.x, mousePos.y) && loadButton.getElapsedTime() > 2.0f){
+                loadButton.restartElapsedTime();
+                loadButton.isPressed = true;
                 loadObstaclePlacement();
             }
         }
@@ -239,10 +239,10 @@ void Simulation::loadObstaclePlacement() {
     int count = 0;
     if (saveFile.is_open()) {
         while (std::getline(saveFile, line)) {
-            if (line == "1") {
-                fluidGrid.setObstacleGridValue((count % gridWidth), ((count - (count % gridWidth) / gridWidth)), true);
+            if (std::stoi(line) == 1) {
+                fluidGrid.setObstacleGridValue((count % gridWidth), (count / gridWidth), true);
             } else {
-                fluidGrid.setObstacleGridValue((count % gridWidth), ((count - (count % gridWidth) / gridWidth)), false);
+                fluidGrid.setObstacleGridValue((count % gridWidth), (count / gridWidth), false);
             }
             count++;
         }
