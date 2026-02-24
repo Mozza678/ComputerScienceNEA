@@ -13,9 +13,7 @@ FluidGrid::FluidGrid()   // Fluid grid constructor, uses the gridWidth value sto
       xemmiterGrid(gridWidth * gridWidth),
       yemmiterGrid(gridWidth * gridWidth)
     {
-        std::fill(obstacleGrid.begin(), obstacleGrid.end(), false);
-        std::fill(xemmiterGrid.begin(), xemmiterGrid.end(), 0.0f);
-        std::fill(yemmiterGrid.begin(), yemmiterGrid.end(), 0.0f);
+        std::fill(obstacleGrid.begin(), obstacleGrid.end(), false); // fills the obstacle grid with false to start with a grid with no obsacles
     };
 
 float FluidGrid::getValue(int grid, int x, int y) { // getter method that can be used on any grid
@@ -39,11 +37,12 @@ void FluidGrid::setValue(int grid, int x, int y, float newValue) { // setter met
     }
 };
 
-bool FluidGrid::getObstacleGridValue(int x, int y) {
-    return obstacleGrid[x + y * gridWidth];
+bool FluidGrid::getObstacleGridValue(int x, int y) { // getter method that can only be used on the obstacle grid
+    return obstacleGrid[x + y * gridWidth];          // seperate from the other getter and setter methods as the other grids are made up of floats whereas the obstacle grid is made up of booleans
 }
 
-void FluidGrid::setObstacleGridValue(int x, int y, bool newValue) {
+void FluidGrid::setObstacleGridValue(int x, int y, bool newValue) { // setter method that can be used on the obstacle grid
+                                                                    // seperate from the other getter and setter methods as the other grids are made up of floats whereas the obstacle grid is made up of booleans
     obstacleGrid[x + y * gridWidth] = newValue;
 }
 
@@ -88,9 +87,6 @@ void FluidGrid::step() {
     advect(0, densityGrid, tempDensityGrid); // the density grid is advected causing the velocity to "pull" the density
 }
 
-void FluidGrid::setup() {
-};
-
 void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) { // this essentially creates a "wall" around the grid so fluid can't escape and is instead reflected
                                                                             // the boundaryType parameter has three settings : 0 - Mirroring density at walls
                                                                             //                                                 1 - Reflecting x velocity at left and right walls
@@ -132,8 +128,8 @@ void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) { // t
 
     // The following code sets teh boundary values for the cells adjacent to the obstacle blocks placed by the user.
 
-
-    if (boundaryType == 1) {
+    if (boundaryType == 1) { // checks if in xvelocity mode and reflects the velocity to the left or right as long as there is an obstacle on the opposite side
+                             // this is the reason for forcing the user to draw two by two squares when in drawObstacle mode
         for (int x = 1; x < gridWidth - 1; x++) {
             for (int y = 1; y < gridWidth - 1; y++) {
                 if (obstacleGrid[x + y * gridWidth]) {
@@ -145,7 +141,7 @@ void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) { // t
                 }
             }
         } 
-    } else if (boundaryType == 2) {
+    } else if (boundaryType == 2) { // checks if in yvelocity mode and reflects the velocity above or below as long as there is an obstacle on the opposite side
         for (int x = 1; x < gridWidth - 1; x++) {
             for (int y = 1; y < gridWidth - 1; y++) {
                 if (obstacleGrid[x + y * gridWidth]) {
@@ -157,7 +153,9 @@ void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) { // t
                 }
             }
         }
-    } else if (boundaryType == 0) {
+    } else if (boundaryType == 0) { // checks if in density mode and assigns correct density to the obstacles on the edge
+                                    // for edges that have obstacle neighbours on 3 of the four sides this is simply copied from the adjacent non-obstacle cell
+                                    // for corners that only have 2 obstacle neighbours this is an average of the 2 non-obstacle neighbours
         for (int x = 1; x < gridWidth - 1; x++) {
             for (int y = 1; y < gridWidth - 1; y++) {
                 if (obstacleGrid[x + y * gridWidth]) {
@@ -188,8 +186,8 @@ void FluidGrid::setBoundaries(int boundaryType, std::vector<float>& grid) { // t
     }
     for(int x = 1; x < gridWidth - 1; x++) {
         for (int y = 1; y < gridWidth - 1; y++) {
-            if (obstacleGrid[x + y * gridWidth] && obstacleGrid[x + 1 + y * gridWidth] && obstacleGrid[x - 1 + y * gridWidth] && obstacleGrid[x + (y + 1) * gridWidth] && obstacleGrid[x + (y - 1) * gridWidth]) {
-                grid[x + y * gridWidth] = 0.0f;
+            if (obstacleGrid[x + y * gridWidth] && obstacleGrid[x + 1 + y * gridWidth] && obstacleGrid[x - 1 + y * gridWidth] && obstacleGrid[x + (y + 1) * gridWidth] && obstacleGrid[x + (y - 1) * gridWidth]) { // density set to zero for all obstacles enclosed by four neighbours
+                grid[x + y * gridWidth] = 0.0f; 
             }
         }
     }

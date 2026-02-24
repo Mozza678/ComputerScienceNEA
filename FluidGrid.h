@@ -27,8 +27,7 @@ public:
 
     float getValue(int grid, int x, int y); // getter method that can be used on any grid (0 - density grid, 1 - x velocity grid, 2 - y velocity grid)
     void setValue(int grid, int x, int y, float newValue); // setter method that can be used on any grid (0 - density grid, 1 - x velocity grid, 2 - y velocity grid)
-    bool getObstacleGridValue(int x, int y);
-    void setObstacleGridValue(int x, int y, bool newValue);
-    void setup(); // funtion called at the start of a simulation to prepare the fluid grid ***** useless as of now
+    bool getObstacleGridValue(int x, int y); // getter method that can only be used on the obstacle grid
+    void setObstacleGridValue(int x, int y, bool newValue); // setter method that can only be used on the setter method
     void step(); // function that calls diffuse, project and advect in the correct order every time step
 };
