@@ -12,7 +12,8 @@ button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::pa
     this->yPos = yPos;
     this->xSize = xSize;
     this->ySize = ySize;
-    this->elapsedTime.restart();
+    elapsedTime.restart();
+    isPressed = false;
 
     if (this->pressedTexture.loadFromFile(pressedTexturePath) && this->idleTexture.loadFromFile(idleTexturePath)) { // attempts to load the texture and returns true or false depending on if they loaded succesfully
         std::cout << "textures loaded"; // prints success message to the terminal if the textures load
@@ -20,7 +21,8 @@ button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::pa
         std::cout << "textures failed to load"; // prints error message to the terminal if the textures fail to load
     };
     
-    buttonSprite.setTexture(idleTexture); // sets the texture again as it has now been loaded from memory
+    buttonSprite.setTexture(idleTexture, true); // sets the texture again as it has now been loaded from memory.
+                                                // the second boolean parameter here forces the sprite to update its dimensions as it was set to zero on initial construction.
     buttonSprite.setPosition({xPos, yPos}); // sets the position of the sprite
     };
 

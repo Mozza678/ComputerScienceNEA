@@ -16,6 +16,7 @@ Simulation::Simulation() // simulation constructor
       addDensityButton(static_cast<float>((2 * scale) + 200), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "AddDensityGreen.png", "AddDensityRed.png"), // construct the addDensityButton with the correct position, size, and textures
       drawObstacleButton(static_cast<float>((3 * scale) + 400), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"), // construct the drawObstacle Button with the correct position, size, and textures
       testButton(static_cast<float>((4 * scale) + 600), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"),
+      testButton2(static_cast<float>((5 * scale) + 800), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"),
       gridSprite(gridTexture) // gridSprite constructed in initializer list as grid sprite has no default constructor
     {
         std::fill(pixelBuffer.begin(), pixelBuffer.end(), 255); // fill the pixel buffer with 255
@@ -92,6 +93,7 @@ void Simulation::run(){
         addDensityButton.render(window); // draw the addDensityButton to the screen
         drawObstacleButton.render(window); // draw the drawObstacleButton to the screen
         testButton.render(window);
+        testButton2.render(window);
         window.display(); // display the new window after all entities have been rendered
     }
 };
@@ -205,9 +207,45 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
             } else if (testButton.checkIfHoveringOver(mousePos.x, mousePos.y) && testButton.getElapsedTime() > 2.0f) {
                 testButton.restartElapsedTime();
                 testButton.isPressed = true;
+                saveObstaclePlacement();
+            } else if (testButton2.checkIfHoveringOver(mousePos.x, mousePos.y) && testButton2.getElapsedTime() > 2.0f){
+                testButton2.restartElapsedTime();
+                testButton2.isPressed = true;
+                loadObstaclePlacement();
             }
         }
     };
 
     lastMousePos = mousePos; // sets the static variable to the mouse position for this frame allowing it to referenced in the next frame
 };
+
+void Simulation::saveObstaclePlacement() {
+    std::ofstream saveFile;
+    saveFile.open("ObstaclePositionSaveFile.txt", std::ios::out);
+    if (saveFile.is_open()) {
+        for (int y = 0; y < gridWidth; y++) {
+            for (int x = 0; x < gridWidth; x++) {
+                saveFile << fluidGrid.getObstacleGridValue(x, y) << '\n';
+            }
+        }
+    }
+    saveFile.close();
+}
+
+void Simulation::loadObstaclePlacement() {
+    std::ifstream saveFile;
+    saveFile.open("ObstaclePositionSaveFile.txt", std::ios::in);
+    std::string line;
+    int count = 0;
+    if (saveFile.is_open()) {
+        while (std::getline(saveFile, line)) {
+            if (line == "1") {
+                fluidGrid.setObstacleGridValue((count % gridWidth), ((count - (count % gridWidth) / gridWidth)), true);
+            } else {
+                fluidGrid.setObstacleGridValue((count % gridWidth), ((count - (count % gridWidth) / gridWidth)), false);
+            }
+            count++;
+        }
+    }
+    saveFile.close();
+}
