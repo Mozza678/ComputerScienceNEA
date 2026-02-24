@@ -2,7 +2,7 @@
 #include <memory>
 #include <iostream>
 
-button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::__cxx11::path pressedPath, std::filesystem::__cxx11::path idlePath)
+button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::path pressedTexturePath, std::filesystem::path idleTexturePath)
     {
 
     // all default and specified values are assigned to each of the attributes
@@ -13,7 +13,7 @@ button::button(float xPos, float yPos, int xSize, int ySize, std::filesystem::__
     this->ySize = ySize;
     this->elapsedTime.restart();
 
-    if (this->pressedTexture.loadFromFile(pressedPath) && this->idleTexture.loadFromFile(idlePath)) { // attempts to load the texture and returns true or false depending on if they loaded succesfully
+    if (this->pressedTexture.loadFromFile(pressedTexturePath) && this->idleTexture.loadFromFile(idleTexturePath)) { // attempts to load the texture and returns true or false depending on if they loaded succesfully
         std::cout << "textures loaded"; // prints success message to the terminal if the textures load
     } else {
         std::cout << "textures failed to load"; // prints error message to the terminal if the textures fail to load
