@@ -72,7 +72,7 @@ void Simulation::updateGridTexture() {
 
 void Simulation::run(){
 
-    sf::RenderWindow window(sf::VideoMode({gridWidth * scale, gridWidth * scale + 100}), "Fluid Simulator"); // intitialize the window with correct size and name
+    sf::RenderWindow window(sf::VideoMode({1000, gridWidth * scale + 100}), "Fluid Simulator"); // intitialize the window with correct size and name, width hard-coded at 1000 to make space for buttons
     window.setFramerateLimit(60); // set maximum frame rate to 60
 
     gridTexture.setSmooth(true); // setting within sfml to enable texture smoothing, very similiar to anti-aliasing
@@ -180,7 +180,7 @@ void Simulation::checkForMouseInput(sf::RenderWindow& window) {
             fluidGrid.setObstacleGridValue(obstacleGridX * 2 + 1, obstacleGridY * 2 + 1, false);
         };
 
-    } else if (gridX > 0 && gridX < gridWidth - 1 && gridY > gridWidth - 1 && gridY < gridWidth + buttonPanelSize) { // checks to see if the mouse is within the bounds of the button section
+    } else { // checks to see if the mouse is within the bounds of the button section
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) { // checks to see if the left mouse button is clicked
             if (showVelocityButton.checkIfHoveringOver(mousePos.x, mousePos.y) && showVelocityButton.getElapsedTime() > 0.5f) { // checks to see if the mouse is within the bounds of the show velocity button and if the button wasn't pressed within the last half second
                 showVelocityButton.isPressed = !showVelocityButton.isPressed; // sets the button to the opposite of itself ( on to off, off to on )

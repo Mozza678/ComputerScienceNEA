@@ -1,6 +1,6 @@
 #pragma once
 
-const int gridWidth = 100; // size of the grid both horizontally and vertically, measured in the amount of cells
+const int gridWidth = 50; // size of the grid both horizontally and vertically, measured in the amount of cells
 const int scale = 10; // pixels per cell width
 const float deltaTime = 0.04f; // ??
 const float diffRate = 0.0001f; // a multiplyer used to alter the amount of diffusion that takes place per time step
