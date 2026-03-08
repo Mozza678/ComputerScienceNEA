@@ -106,139 +106,139 @@ void Simulation::updatePixelBuffer() {
             bool obstacle = fluidGrid.getObstacleGridValue(x, y); // Retrieves the current obstacle data for this cell.
 
             if (drawObstacleButton.isPressed) {
-                // if in drawing mode, obstacles appear white and the backround appears black
+                // If in drawing mode, obstacles appear white and the background appears black.
                 assignObstacleToPixelBuffer(obstacle, x, y);
             } else if (obstacle) {
-                // In normal mode and showVelocityMode, obstacles appear blue
+                // In normal mode and showVelocityMode, obstacles appear blue.
                 pixelColourValues.push_back(0);   // Red
                 pixelColourValues.push_back(0);   // Green
                 pixelColourValues.push_back(255); // Blue
                 pixelColourValues.push_back(255); // Opacity
             } else if (showVelocityButton.isPressed) {
-                // show velocity as a colour gradient
+                // Show velocity as a colour gradient.
                 float velocityX = fluidGrid.getValue(1, x, y);
                 float velocityY = fluidGrid.getValue(2, x, y);
                 assignVelocityAndDensityToPixelBuffer(density, velocityX, velocityY, x, y);
             } else {
-                // Default: show fluid density as grayscale
+                // Default: show fluid density as grayscale.
                 assignDensityToPixelBuffer(density, x, y);
             }
 
             for (int i = 0; i < pixelColourValues.size(); i++) {
-                pixelBuffer[(4 * (x + gridWidth * y)) + i] = pixelColourValues[i]; // add the the pixelColourValues for the current cell to the pixelBuffer
+                pixelBuffer[(4 * (x + gridWidth * y)) + i] = pixelColourValues[i]; // Add the the pixelColourValues for the current cell to the pixelBuffer.
             }
         }
     }
 }
 
 void Simulation::checkForMouseInput(sf::RenderWindow& window) { 
-    sf::Vector2i mousePos = sf::Mouse::getPosition(window); // creates a two element vector containing the x and y position of the mouse in the current frame
+    sf::Vector2i mousePos = sf::Mouse::getPosition(window); // Creates a two element vector containing the x and y position of the mouse in the current frame.
     
-    static sf::Vector2i lastMousePos; // creates a static vector that outlives the function meaning the co-ordinates of the mouse from the last frame can be stored
+    static sf::Vector2i lastMousePos; // Creates a static vector that outlives the function meaning the co-ordinates of the mouse from the last frame can be stored.
 
-    int deltaX = mousePos.x - lastMousePos.x; // the distance that the mouse has moved along the x axis from last frame is calculated
-    int deltaY = mousePos.y - lastMousePos.y; // the distance that the mouse has moved along the y axis from last frame is calculated
+    int deltaX = mousePos.x - lastMousePos.x; // The distance that the mouse has moved along the x axis from last frame is calculated.
+    int deltaY = mousePos.y - lastMousePos.y; // The distance that the mouse has moved along the y axis from last frame is calculated.
 
-    int gridX = mousePos.x / scale; // use the scale to convert the mouse pixel co-ordinate to a cell x co-ordinate within the fluid grid
-    int gridY = mousePos.y / scale; // use the scale to convert the mouse pixel co-ordinate to a cell y co-ordinate within the fluid grid
+    int gridX = mousePos.x / scale; // Use the scale to convert the mouse pixel co-ordinate to a cell x co-ordinate within the fluid grid.
+    int gridY = mousePos.y / scale; // Use the scale to convert the mouse pixel co-ordinate to a cell y co-ordinate within the fluid grid.
 
-    int obstacleGridX = mousePos.x / (scale * 2); // use the scale to convert the mouse pixel co-ordinate to a cell x co-ordinate within the obstacle grid
-    int obstacleGridY = mousePos.y / (scale * 2); // use the scale to convert the mouse pixel co-ordinate to a cell y co-ordinate within the obstacle grid
+    int obstacleGridX = mousePos.x / (scale * 2); // Use the scale to convert the mouse pixel co-ordinate to a cell x co-ordinate within the obstacle grid.
+    int obstacleGridY = mousePos.y / (scale * 2); // Use the scale to convert the mouse pixel co-ordinate to a cell y co-ordinate within the obstacle grid.
 
-    if (gridX > 0 && gridX < gridWidth - 1 && gridY > 0 && gridY < gridWidth - 1) { // checks if the mouse is within the bounds of the fluid grid
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !drawObstacleButton.isPressed) { // checks if the left mouse button is pressed
+    if (gridX > 0 && gridX < gridWidth - 1 && gridY > 0 && gridY < gridWidth - 1) { // Checks if the mouse is within the bounds of the fluid grid.
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !drawObstacleButton.isPressed) { // Checks if the left mouse button is pressed.
             if (addDensityButton.isPressed) {
-                for (int xSize = -brushSize; xSize <= brushSize; xSize++) { // loops through the neighbours from the left to the right allowing multiple cells to be painted with each click, this creates more of a paint brush feel
-                    for (int ySize = -brushSize; ySize <= brushSize; ySize++) { // loops through the neighbours from the bottom to the top
-                        float currentDensity = fluidGrid.getValue(0, gridX + xSize, gridY + ySize); // assigns the current density of each cell within the brushes limits to a temporary variable
-                        if (currentDensity + fluidAddedOnClick <= 1.0f) { // ensures that a density value greater than 1.0f isn't added
-                            fluidGrid.setValue(0, gridX + xSize, gridY + ySize, (currentDensity + fluidAddedOnClick)); // adds the density value in settings to the current grid cell
+                for (int xSize = -brushSize; xSize <= brushSize; xSize++) { // Loops through the neighbours from the left to the right allowing multiple cells to be painted with each click, this creates more of a paint brush feel for the user.
+                    for (int ySize = -brushSize; ySize <= brushSize; ySize++) { // Loops through the neighbours from the bottom to the top.
+                        float currentDensity = fluidGrid.getValue(0, gridX + xSize, gridY + ySize); // Assigns the current density of each cell within the brushes limits to a temporary variable.
+                        if (currentDensity + fluidAddedOnClick <= 1.0f) { // Ensures that a density value greater than 1.0f isn't added.
+                            fluidGrid.setValue(0, gridX + xSize, gridY + ySize, (currentDensity + fluidAddedOnClick)); // Adds the density value in settings to the current grid cell.
                         } else {
-                            fluidGrid.setValue(0, gridX + xSize, gridY + ySize, (1.0f)); // adds the maximum density value (1.0f) if the density wouldve exceeded this value
+                            fluidGrid.setValue(0, gridX + xSize, gridY + ySize, (1.0f)); // Adds the maximum density value (1.0f) if the density wouldve exceeded this value.
                         };                    
                     }
                 }
             };
 
-            float currentVX = fluidGrid.getValue(1, gridX, gridY); // assigns the current x velocity to a temporary variable
-            float currentVY = fluidGrid.getValue(2, gridX, gridY); // assigns the current y velocity to a temporary variable
+            float currentVX = fluidGrid.getValue(1, gridX, gridY); // Assigns the current x velocity to a temporary variable.
+            float currentVY = fluidGrid.getValue(2, gridX, gridY); // Assigns the current y velocity to a temporary variable.
                 
-            fluidGrid.setValue(1, gridX, gridY, currentVX + (static_cast<float>(deltaX) * velocityAddedOnClick)); // adds x velocity at the current cell depending on the speed of the mouse ( calculated based on the distance moved since last frame)
-            fluidGrid.setValue(2, gridX, gridY, currentVY + (static_cast<float>(deltaY) * velocityAddedOnClick)); // adds y velocity at the current cell depending on the speed of the mouse ( calculated based on the distance moved since last frame)
-        } else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && drawObstacleButton.isPressed) { // checks if the user is in drawObstacle mode and attempting to add new obstacles
-            // adds a two by two square onto the obstacle grid
-            // it is a two by two square due to the logic of the setBoundaries function within the fluidGrid class
+            fluidGrid.setValue(1, gridX, gridY, currentVX + (static_cast<float>(deltaX) * velocityAddedOnClick)); // Adds x velocity at the current cell depending on the speed of the mouse (calculated based on the distance moved since last frame).
+            fluidGrid.setValue(2, gridX, gridY, currentVY + (static_cast<float>(deltaY) * velocityAddedOnClick)); // Adds y velocity at the current cell depending on the speed of the mouse (calculated based on the distance moved since last frame).
+        } else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && drawObstacleButton.isPressed) { // Checks if the user is in drawObstacle mode and attempting to add new obstacles.
+            // Adds a two by two square onto the obstacle grid.
+            // It is a two by two square due to the logic of the setBoundaries function within the fluidGrid class.
             fluidGrid.setObstacleGridValue(obstacleGridX * 2, obstacleGridY * 2, true);
             fluidGrid.setObstacleGridValue(obstacleGridX * 2 + 1, obstacleGridY * 2, true);
             fluidGrid.setObstacleGridValue(obstacleGridX * 2, obstacleGridY * 2 + 1, true);
             fluidGrid.setObstacleGridValue(obstacleGridX * 2 + 1, obstacleGridY * 2 + 1, true);
-        } else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && drawObstacleButton.isPressed) { // checks if the user is in drawObstacle mode and attempting to remove obstacles
-            // removes a two by two square from the obstacle grid
+        } else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && drawObstacleButton.isPressed) { // Checks if the user is in drawObstacle mode and attempting to remove obstacles.
+            // Removes a two by two square from the obstacle grid.
             fluidGrid.setObstacleGridValue(obstacleGridX * 2, obstacleGridY * 2, false);
             fluidGrid.setObstacleGridValue(obstacleGridX * 2 + 1, obstacleGridY * 2, false);
             fluidGrid.setObstacleGridValue(obstacleGridX * 2, obstacleGridY * 2 + 1, false);
             fluidGrid.setObstacleGridValue(obstacleGridX * 2 + 1, obstacleGridY * 2 + 1, false);
         };
 
-    } else { // checks to see if the mouse is within the bounds of the button section
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) { // checks to see if the left mouse button is clicked
-            if (showVelocityButton.checkIfHoveringOver(mousePos.x, mousePos.y) && showVelocityButton.getElapsedTime() > 0.5f) { // checks to see if the mouse is within the bounds of the show velocity button and if the button wasn't pressed within the last half second
-                showVelocityButton.isPressed = !showVelocityButton.isPressed; // sets the button to the opposite of itself ( on to off, off to on )
-                showVelocityButton.stateChanged = true; // tells the button class that the button has been pressed causing it to carry out the relevant action
-                drawObstacleButton.isPressed = false; // turns off the draw obstacle button as they can't be active at the same time
-                drawObstacleButton.stateChanged = true; // tells the draw obstacle button that the state may have changed
-            } else if (addDensityButton.checkIfHoveringOver(mousePos.x, mousePos.y) && addDensityButton.getElapsedTime() > 0.5f) {
-                addDensityButton.isPressed = !addDensityButton.isPressed; // sets the button to the opposite of itself ( on to off, off to on )
-                addDensityButton.stateChanged = true; // tells the button class that the button has been pressed causing it to carry out the relevant action
-                drawObstacleButton.isPressed = false; // turns off the draw obstacle button as they can't be active at the same time
-                drawObstacleButton.stateChanged = true; // tells the draw obstacle button that the state may have changed
-            } else if (drawObstacleButton.checkIfHoveringOver(mousePos.x, mousePos.y) && drawObstacleButton.getElapsedTime() > 0.5f) {
-                if (drawObstacleButton.isPressed) { // checks if the drawObstacleButton is currently active and sets it to idle if so
-                    drawObstacleButton.isPressed = false;
-                    drawObstacleButton.stateChanged = true;
-                } else { // if the drawObstacleButton is idle it turns it to active and turns both other buttons off
-                    drawObstacleButton.isPressed = true;
+    } else { // Checks to see if the mouse is within the bounds of the button section.
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) { // Checks to see if the left mouse button is clicked.
+            if (showVelocityButton.checkIfHoveringOver(mousePos.x, mousePos.y) && showVelocityButton.getElapsedTime() > 0.5f) { // Checks to see if the mouse is within the bounds of the show velocity button and if the button wasn't pressed within the last half second.
+                showVelocityButton.isPressed = !showVelocityButton.isPressed; // Sets the button to the opposite of itself ( on to off, off to on ).
+                showVelocityButton.stateChanged = true; // Tells the button class that the button has been pressed causing it to carry out the relevant action.
+                drawObstacleButton.isPressed = false; // Turns off the draw obstacle button as they can't be active at the same time.
+                drawObstacleButton.stateChanged = true; // Tells the draw obstacle button that the state may have changed.
+            } else if (addDensityButton.checkIfHoveringOver(mousePos.x, mousePos.y) && addDensityButton.getElapsedTime() > 0.5f) { // Checks to see if the mouse is within the bounds of the add density button and if the button wasn't pressed within the last half second.
+                addDensityButton.isPressed = !addDensityButton.isPressed; // Sets the button to the opposite of itself ( on to off, off to on ).
+                addDensityButton.stateChanged = true; // Tells the button class that the button has been pressed causing it to carry out the relevant action.
+                drawObstacleButton.isPressed = false; // Turns off the draw obstacle button as they can't be active at the same time.
+                drawObstacleButton.stateChanged = true; // Tells the draw obstacle button that the state may have changed.
+            } else if (drawObstacleButton.checkIfHoveringOver(mousePos.x, mousePos.y) && drawObstacleButton.getElapsedTime() > 0.5f) { // Checks to see if the mouse is within the bounds of the draw obstacle button and if the button wasn't pressed within the last half second.
+                if (drawObstacleButton.isPressed) { // Checks if the drawObstacleButton is currently active and sets it to idle if so.
+                    drawObstacleButton.isPressed = false; // Turns off the draw obstacle button as they can't be active at the same time.
+                    drawObstacleButton.stateChanged = true; // Tells the draw obstacle button that the state may have changed.
+                } else { // If the drawObstacleButton is idle it turns it to active and turns both other buttons off.
+                    drawObstacleButton.isPressed = true; 
                     drawObstacleButton.stateChanged = true;
                     addDensityButton.isPressed = false;
                     addDensityButton.stateChanged = true;
                     showVelocityButton.isPressed = false;
                     showVelocityButton.stateChanged = true;
                 }
-            } else if (saveButton.checkIfHoveringOver(mousePos.x, mousePos.y) && saveButton.getElapsedTime() > 2.0f) {
+            } else if (saveButton.checkIfHoveringOver(mousePos.x, mousePos.y) && saveButton.getElapsedTime() > 2.0f) { // Checks to see if the mouse is within the bounds of the save button and if the button wasn't pressed within the last two seconds.
                 saveButton.restartElapsedTime();
                 saveButton.isPressed = true;
                 saveObstaclePlacement();
-            } else if (loadButton.checkIfHoveringOver(mousePos.x, mousePos.y) && loadButton.getElapsedTime() > 2.0f){
-                loadButton.restartElapsedTime();
+            } else if (loadButton.checkIfHoveringOver(mousePos.x, mousePos.y) && loadButton.getElapsedTime() > 2.0f){ // Checks to see if the mouse is within the bounds of the load button and if the button wasn't pressed within the last two seconds.
+                loadButton.restartElapsedTime(); 
                 loadButton.isPressed = true;
                 loadObstaclePlacement();
             }
         }
     };
 
-    lastMousePos = mousePos; // sets the static variable to the mouse position for this frame allowing it to referenced in the next frame
+    lastMousePos = mousePos; // Sets the static variable to the mouse position for this frame allowing it to referenced in the next frame for calculating the distance that the mouse has travelled between frames.
 };
 
 void Simulation::saveObstaclePlacement() {
-    std::ofstream saveFile;
-    saveFile.open("ObstaclePositionSaveFile.txt", std::ios::out);
-    if (saveFile.is_open()) {
-        for (int y = 0; y < gridWidth; y++) {
+    std::ofstream saveFile; // A file in output mode is assigned to the name saveFile.
+    saveFile.open("ObstaclePositionSaveFile.txt", std::ios::out); // The ObstaclePositionSaveFile is opened and assigned to the saveFile variable.
+    if (saveFile.is_open()) { // Checks to see if the file is open.
+        for (int y = 0; y < gridWidth; y++) { // Loops through all cells in the grid and assigns the obstacle data for each cell to its own line.
             for (int x = 0; x < gridWidth; x++) {
                 saveFile << fluidGrid.getObstacleGridValue(x, y) << '\n';
             }
         }
     }
-    saveFile.close();
+    saveFile.close(); // File is closed.
 }
 
 void Simulation::loadObstaclePlacement() {
-    std::ifstream saveFile;
-    saveFile.open("ObstaclePositionSaveFile.txt", std::ios::in);
+    std::ifstream saveFile; // A file in input mode is assigned to the name saveFile.
+    saveFile.open("ObstaclePositionSaveFile.txt", std::ios::in); // The ObstaclePositionSaveFile is opened and assigned to the saveFile variable.
     std::string line;
     int count = 0;
     if (saveFile.is_open()) {
-        while (std::getline(saveFile, line)) {
+        while (std::getline(saveFile, line)) { // Each line in the file is looped through and the data is assigned to the relevant cell in the obstacle grid.
             if (std::stoi(line) == 1) {
                 fluidGrid.setObstacleGridValue((count % gridWidth), (count / gridWidth), true);
             } else {
@@ -247,5 +247,5 @@ void Simulation::loadObstaclePlacement() {
             count++;
         }
     }
-    saveFile.close();
+    saveFile.close(); // File is closed.
 }
