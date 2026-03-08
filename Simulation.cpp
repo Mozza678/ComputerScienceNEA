@@ -7,36 +7,36 @@
 #include <memory>
 #include <math.h>
 
-Simulation::Simulation() // simulation constructor
-    : pixelBuffer(4 * gridWidth * gridWidth), // initialize the pixel buffer
-      gridTexture({static_cast<unsigned int>(gridWidth), static_cast<unsigned int>(gridWidth)}), // initialize the grid texture with size gridWidth x gridWidth 
-      fluidGrid(), // instantiate a fluid grid with size gridWidth x gridWidth
-      // buttons constructed in the initializer list as button has no default constructor
-      showVelocityButton(static_cast<float>(1 * scale), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "ShowVelocityGreen.png", "ShowVelocityRed.png"), // construct the showVelocityButton with the correct position, size, and textures
-      addDensityButton(static_cast<float>((2 * scale) + 200), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "AddDensityGreen.png", "AddDensityRed.png"), // construct the addDensityButton with the correct position, size, and textures
-      drawObstacleButton(static_cast<float>((3 * scale) + 400), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"), // construct the drawObstacle Button with the correct position, size, and textures
-      saveButton(static_cast<float>((4 * scale) + 600), static_cast<float>(1 * scale + scale * gridWidth), 120, 80, "SaveGreen.png", "SaveRed.png"),
-      loadButton(static_cast<float>((5 * scale) + 720), static_cast<float>(1 * scale + scale * gridWidth), 120, 80, "LoadGreen.png", "LoadRed.png"),
-      gridSprite(gridTexture) // gridSprite constructed in initializer list as grid sprite has no default constructor
+Simulation::Simulation()
+    : pixelBuffer(4 * gridWidth * gridWidth), // Initialize the pixel buffer with size that allows for 4 values for every pixel.
+      gridTexture({static_cast<unsigned int>(gridWidth), static_cast<unsigned int>(gridWidth)}), // Initialize the grid texture with size gridWidth x gridWidth.
+      fluidGrid(), // Initialize a fluid grid with size gridWidth x gridWidth.
+      // Buttons constructed in the initializer list as button has no default constructor.
+      showVelocityButton(static_cast<float>(1 * scale), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "ShowVelocityGreen.png", "ShowVelocityRed.png"), // Construct the showVelocityButton with the correct position, size, and textures.
+      addDensityButton(static_cast<float>((2 * scale) + 200), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "AddDensityGreen.png", "AddDensityRed.png"), // Construct the addDensityButton with the correct position, size, and textures.
+      drawObstacleButton(static_cast<float>((3 * scale) + 400), static_cast<float>(1 * scale + scale * gridWidth), 200, 80, "DrawObstacleGreen.png", "DrawObstacleRed.png"), // Construct the drawObstacle Button with the correct position, size, and textures.
+      saveButton(static_cast<float>((4 * scale) + 600), static_cast<float>(1 * scale + scale * gridWidth), 120, 80, "SaveGreen.png", "SaveRed.png"), // Construct the saveButton Button with the correct position, size, and textures.
+      loadButton(static_cast<float>((5 * scale) + 720), static_cast<float>(1 * scale + scale * gridWidth), 120, 80, "LoadGreen.png", "LoadRed.png"), // Construct the loadButton Button with the correct position, size, and textures.
+      gridSprite(gridTexture) // GridSprite constructed in initializer list as grid sprite has no default constructor.
     {
-        std::fill(pixelBuffer.begin(), pixelBuffer.end(), 255); // fill the pixel buffer with 255
-        gridSprite.setScale({static_cast<float>(scale), static_cast<float>(scale)}); // set the scale of the sprite to ensure it fills the screen
+        std::fill(pixelBuffer.begin(), pixelBuffer.end(), 255); // Fill the pixel buffer with 255.
+        gridSprite.setScale({static_cast<float>(scale), static_cast<float>(scale)}); // Set the scale of the sprite to ensure it fills the screen.
     }
 
 void Simulation::assignDensityToPixelBuffer(float density, int x, int y){
 
-    int integerDensity = static_cast<int>(std::clamp(density, 0.0f, 1.0f) * 250); // convert the float density value into a value inbetween 0 and 255
-    for (int i = 0; i < 3; i++) { // loop through R, G, and B
-        pixelColourValues.push_back(integerDensity); // add the corresponding values to the vector to create a grey that corresponds to the density of that box
+    int integerDensity = static_cast<int>(std::clamp(density, 0.0f, 1.0f) * 250); // Convert the float density value into a value inbetween 0 and 255.
+    for (int i = 0; i < 3; i++) { // Loop through R, G, and B.
+        pixelColourValues.push_back(integerDensity); // Add the corresponding values to the vector to create a grey that corresponds to the density of that cell.
     }
-    pixelColourValues.push_back(255); // set the A (opacity) value to 255 to ensure visibility
+    pixelColourValues.push_back(255); // Set the A (opacity) value to 255 to ensure visibility.
 };
 
-void Simulation::assignVelocityAndDensityToPixelBuffer(float density, float velocityX, float velocityY, int x, int y) { // this is used when the show velocity is button to render colours to the screen representing the velocity and opacity that represents the density
-    int integerDensity = static_cast<int>(std::clamp(density, 0.0f, 1.0f) * 250); // initialize temporary variable that contains a density value mapped to a value between 0 - 255
-    int velocityMagnitude = std::clamp(static_cast<int>((pow(pow(velocityX, 2) + pow(velocityY, 2), 0.5f)) / pow(2, 0.5) * 255), 0, 63) * 4; // mathematical function that converts the x and y velocity values to a magnitude between 0 and 255
+void Simulation::assignVelocityAndDensityToPixelBuffer(float density, float velocityX, float velocityY, int x, int y) {
+    int integerDensity = static_cast<int>(std::clamp(density, 0.0f, 1.0f) * 250); // Initialize temporary variable that contains a density value mapped to a value between 0 - 255.
+    int velocityMagnitude = std::clamp(static_cast<int>((pow(pow(velocityX, 2) + pow(velocityY, 2), 0.5f)) / pow(2, 0.5) * 255), 0, 63) * 4; // Uses pythagorous to calculate the velocity magnitude and then clamp that value between 0 and 252.
 
-    // the following code represents a mathematical equation that converts from a numerical value between 0 and 255 to a colour between red and blue
+    // The following code represents a mathematical equation that converts from a numerical value between 0 and 255 to a colour between red and blue.
 
     if (velocityMagnitude < 128) { 
         pixelColourValues.push_back(255 - 2 * velocityMagnitude);
@@ -53,12 +53,12 @@ void Simulation::assignVelocityAndDensityToPixelBuffer(float density, float velo
 
 void Simulation::assignObstacleToPixelBuffer(bool obstacle, int x, int y) {
     if (obstacle) {
-        // set obstacle cells to White for drawing/edit modes
+        // Sets obstacle cells to White for drawing/edit modes.
         for (int i = 0; i < 4; i++) {
             pixelColourValues.push_back(255);
         }
     } else {
-        // sets non-obstacle cells to the background color (Black/Empty)
+        // Sets non-obstacle cells to the background color (Black/Empty).
         for (int i = 0; i < 3; i++) {
             pixelColourValues.push_back(0);
         }
@@ -67,43 +67,43 @@ void Simulation::assignObstacleToPixelBuffer(bool obstacle, int x, int y) {
 }
 
 void Simulation::updateGridTexture() {
-    gridTexture.update(pixelBuffer.data()); // update the texture with the pixel buffer data
+    gridTexture.update(pixelBuffer.data()); // Update the texture with the pixel buffer data.
 };
 
 void Simulation::run(){
 
-    sf::RenderWindow window(sf::VideoMode({1000, gridWidth * scale + 100}), "Fluid Simulator"); // intitialize the window with correct size and name, width hard-coded at 1000 to make space for buttons
-    window.setFramerateLimit(60); // set maximum frame rate to 60
+    sf::RenderWindow window(sf::VideoMode({1000, gridWidth * scale + 100}), "Fluid Simulator"); // Intitialize the window with correct size and name, width hard-coded at 1000 pixels to make space for buttons.
+    window.setFramerateLimit(60); // Set maximum frame rate to 60 to avoid high usage of hardware that could lead to overheating.
 
-    gridTexture.setSmooth(true); // setting within sfml to enable texture smoothing, very similiar to anti-aliasing
+    gridTexture.setSmooth(true); // Setting within sfml to enable texture smoothing, very similiar to anti-aliasing. Reduces the pixelated look of the fluid simulation slightly.
 
-    while (window.isOpen()) { // loop while the window is still open
-        while (auto event = window.pollEvent()) { // check for SFML events
-            if (event->is<sf::Event::Closed>()) { // checks if the window is requested to be closed
-                window.close(); // close window
+    while (window.isOpen()) { // Loop while the window is still open.
+        while (auto event = window.pollEvent()) { // Check for SFML events.
+            if (event->is<sf::Event::Closed>()) { // Checks if the window is requested to be closed.
+                window.close(); // Close window if the user requested it.
             }
         }
-        checkForMouseInput(window); // checks for any form of valid mouse input and acts accordingly
-        fluidGrid.step(); // move the fluid simulator forward by one step (deltaTime unit)
+        checkForMouseInput(window); // Checks for any form of valid mouse input and acts accordingly.
+        fluidGrid.step(); // Move the fluid simulator forward by one step.
         updatePixelBuffer();
         updateGridTexture();
-        window.clear({255,255,255}); // wipe the previous frame
-        window.draw(gridSprite); // draw the sprite to the screen
-        showVelocityButton.render(window); // draw the showVelocityButton to the screen
-        addDensityButton.render(window); // draw the addDensityButton to the screen
-        drawObstacleButton.render(window); // draw the drawObstacleButton to the screen
-        saveButton.render(window);
-        loadButton.render(window);
-        window.display(); // display the new window after all entities have been rendered
+        window.clear({255,255,255}); // Wipe the previous frame.
+        window.draw(gridSprite); // Draw the sprite to the screen.
+        showVelocityButton.render(window); // Draw the showVelocityButton to the screen.
+        addDensityButton.render(window); // Draw the addDensityButton to the screen.
+        drawObstacleButton.render(window); // Draw the drawObstacleButton to the screen.
+        saveButton.render(window); // Draw the saveButton to the screen.
+        loadButton.render(window); // Draw the loadButton to the screen.
+        window.display(); // Display the new window after all entities have been rendered.
     }
 };
 
 void Simulation::updatePixelBuffer() {
     for (int y = 0; y < gridWidth; y++) {
         for (int x = 0; x < gridWidth; x++) {
-            pixelColourValues.clear(); // reset the temporary vector so that it can be writted to
-            float density = fluidGrid.getValue(0, x, y); // retrieve the current density value from the fluid grid for this cell
-            bool obstacle = fluidGrid.getObstacleGridValue(x, y); // retrieve the current obstacle data for this cell
+            pixelColourValues.clear(); // Resets the temporary vector so that it can be written to.
+            float density = fluidGrid.getValue(0, x, y); // Retrieves the current density value from the fluid grid for this cell.
+            bool obstacle = fluidGrid.getObstacleGridValue(x, y); // Retrieves the current obstacle data for this cell.
 
             if (drawObstacleButton.isPressed) {
                 // if in drawing mode, obstacles appear white and the backround appears black

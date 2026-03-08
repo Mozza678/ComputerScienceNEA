@@ -24,6 +24,8 @@ private:
     button saveButton; // Button that saves the current postitions of all obstacles to an external text file.
     button loadButton; // Button that loads obstacle positions from an external text file.
 
+    void assignVelocityAndDensityToPixelBuffer(float density, float velocityX, float velocityY, int x, int y); // Method that takes a density and velocity value from a cell and assigns it corresponding R, G, B, and A values.
+                                                                                                               // These represent a colour on a colour gradient that corresponds to the magnitude of the velocity.
     void assignDensityToPixelBuffer(float density, int x, int y); // Method that takes a density value and assigns it corresponding R, G, B, and A that represent a tone of grey that corresponds to the density value.
     void assignObstacleToPixelBuffer(bool obstacle, int x, int y); // Method that assigns the obstacle positions as white and the remaining cells as black.
                                                                    // This creates a clutter free screen making it easy to draw obstacles.

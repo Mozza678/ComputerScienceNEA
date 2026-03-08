@@ -27,8 +27,9 @@ private:
 
     void diffuse(int boundaryType, std::vector<float>& x, std::vector<float>& x0); // Method that "spreads" the fluid or velocity out when called.
     void setBoundaries(int boundaryType, std::vector<float>& x); // Method that reflects velocity and blocks density at the outer "walls" and the obstacles.
+                                                                 // This is generally called on a grid after it has been altered in any way.
     void advect(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid); // Method that moves density or velocity based on the velocity in the grid.
-    void project(std::vector<float>& xvelocityGrid, std::vector<float>& yvelocityGrid, std::vector<float>& divergenceGrid, std::vector<float>& pressureGrid); // Method that makes the simulation mass-conserving by "cleaning up" after the advect method.
+    void project(std::vector<float>& xvelocityGrid, std::vector<float>& yvelocityGrid, std::vector<float>& divergenceGrid, std::vector<float>& pressureGrid); // Method that makes the simulation mass-conserving by "cleaning up" after the velocity grid's have been altered.
 public:
     FluidGrid(); // Constructor for the fluid grid.
 
