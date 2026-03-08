@@ -2,21 +2,19 @@
 #include "math.h"
 #include "settings.h"
 
-FluidGrid::FluidGrid()   // Fluid grid constructor, uses the gridWidth value stored in settings header file to construct all grids
+FluidGrid::FluidGrid()   // Fluid grid constructor, uses the gridWidth value stored in settings header file to construct all grids.
     : densityGrid(gridWidth * gridWidth),
       tempDensityGrid(gridWidth * gridWidth),
       xvelocityGrid(gridWidth * gridWidth),
       yvelocityGrid(gridWidth * gridWidth),
       divergenceGrid(gridWidth * gridWidth), 
       pressureGrid(gridWidth * gridWidth),
-      obstacleGrid(gridWidth * gridWidth),
-      xemmiterGrid(gridWidth * gridWidth),
-      yemmiterGrid(gridWidth * gridWidth)
+      obstacleGrid(gridWidth * gridWidth)
     {
-        std::fill(obstacleGrid.begin(), obstacleGrid.end(), false); // fills the obstacle grid with false to start with a grid with no obsacles
+        std::fill(obstacleGrid.begin(), obstacleGrid.end(), false); // Fills the obstacle grid with false to start with a grid with no obstacles.
     };
 
-float FluidGrid::getValue(int grid, int x, int y) { // getter method that can be used on any grid
+float FluidGrid::getValue(int grid, int x, int y) {
     if (grid == 0) {
         return densityGrid[x + y * gridWidth];
     } else if (grid == 1) {
@@ -27,7 +25,7 @@ float FluidGrid::getValue(int grid, int x, int y) { // getter method that can be
     return 0.0f;
 };
 
-void FluidGrid::setValue(int grid, int x, int y, float newValue) { // setter method that can be used on any grid
+void FluidGrid::setValue(int grid, int x, int y, float newValue) {
     if (grid == 0) {
         densityGrid[x + y * gridWidth] = newValue;
     } else if (grid == 1) {
@@ -37,42 +35,41 @@ void FluidGrid::setValue(int grid, int x, int y, float newValue) { // setter met
     }
 };
 
-bool FluidGrid::getObstacleGridValue(int x, int y) { // getter method that can only be used on the obstacle grid
-    return obstacleGrid[x + y * gridWidth];          // seperate from the other getter and setter methods as the other grids are made up of floats whereas the obstacle grid is made up of booleans
+bool FluidGrid::getObstacleGridValue(int x, int y) {
+    return obstacleGrid[x + y * gridWidth];          
 }
 
-void FluidGrid::setObstacleGridValue(int x, int y, bool newValue) { // setter method that can be used on the obstacle grid
-                                                                    // seperate from the other getter and setter methods as the other grids are made up of floats whereas the obstacle grid is made up of booleans
+void FluidGrid::setObstacleGridValue(int x, int y, bool newValue) {                                                              
     obstacleGrid[x + y * gridWidth] = newValue;
 }
 
-void FluidGrid::diffuse(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid) { // 
-    float spreadingFactor = deltaTime * diffRate * (gridWidth - 2) * (gridWidth - 2); // the amount the fluid spreads due to the diffusion
-                                                                                      // this is proportional to the useful grid size, the time step and an arbitrary adjustable constant set in settings
-
-    for (int pass = 0; pass < 20; pass++) { // the method for solving the equation for the diffusion is only an estimate and therefore is looped to increase accuracy
-        for (int y = 1; y < gridWidth - 1; y++) { // loop through all rows
-            for (int x = 1; x < gridWidth - 1; x++) { // loop through all columns
+void FluidGrid::diffuse(int boundaryType, std::vector<float>& grid, std::vector<float>& tempGrid) {
+    float spreadingFactor = deltaTime * diffRate * (gridWidth - 2) * (gridWidth - 2); // A spreading factor that makes the diffusion consistent over different grid sizes.
+                                                                                      // This also is where the "deltaTime" and "diffRate" values assigned in "settings.h" are taken into account.
+    for (int pass = 0; pass < 20; pass++) { // The method for solving the equation for the diffusion is only an estimate and therefore is looped to increase accuracy.
+                                            // Each pass increases realism but decreases performance. 20 is a good balance between accuracy and performance.
+        for (int y = 1; y < gridWidth - 1; y++) { // Loop through all rows in the grid.
+            for (int x = 1; x < gridWidth - 1; x++) { // Loop through all columns in the grid.
                 grid[x + gridWidth * y] = (tempGrid[x + gridWidth * y] + 
                     spreadingFactor * (
                         grid[x - 1 + gridWidth * y] + 
                         grid[x + 1 + gridWidth * y] +
                         grid[x + gridWidth * (y - 1)] + 
                         grid[x + gridWidth * (y + 1)]))
-                    / (1 + 4 * spreadingFactor); // equation for solving density taken from jon stams paper "Real Time Fluid Dynamics for Games"
+                    / (1 + 4 * spreadingFactor); // Equation for solving density taken from jon stams paper "Real Time Fluid Dynamics for Games".
             }
         }
-        setBoundaries(boundaryType, grid); // set boundries fucntion called using the parameter passed in diffuse
-                                           // this parameter is required as both the density and velocity grids are diffused
+        setBoundaries(boundaryType, grid); // Set boundries fucntion called using the parameter passed in diffuse.
+                                           // This parameter is required as both the density and velocity grids are diffused.
     }
 }
 
 void FluidGrid::step() {
-    tempxVelocityGrid = xvelocityGrid; // the temporary velocity grids are set to be referenced within the diffuse function
+    tempxVelocityGrid = xvelocityGrid; // The temporary velocity grids are set to be referenced within the diffuse function.
     tempyVelocityGrid = yvelocityGrid;
-    diffuse(1, xvelocityGrid, tempxVelocityGrid); // both velocity grids are diffused to "spread" the velocity
+    diffuse(1, xvelocityGrid, tempxVelocityGrid); // Both velocity grids are diffused to "spread" the velocity.
     diffuse(2, yvelocityGrid, tempyVelocityGrid);
-    project(xvelocityGrid, yvelocityGrid, divergenceGrid, pressureGrid); // the velocity grids are projected to conserve mass, this is done after acting on the velocity grids in any way
+    project(xvelocityGrid, yvelocityGrid, divergenceGrid, pressureGrid); // The velocity grids are projected to conserve mass, this is done after acting on the velocity grids in any way
 
     tempxVelocityGrid = xvelocityGrid; // the temporary velocity grids are set to be referenced within the advect function
     tempyVelocityGrid = yvelocityGrid;
